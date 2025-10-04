@@ -32,21 +32,72 @@
 
 ## MANDATORY BEHAVIORS
 
-### 1. OBJECTIVE DECISION MAKING
+### 1. TAKE INITIATIVE - EXECUTE COMMANDS YOURSELF
+
+**CRITICAL**: You have access to CLIs and tools - USE THEM instead of telling the user to run commands.
+
+**ALWAYS execute these yourself:**
+- `gh` (GitHub CLI): Creating PRs, merging PRs, checking status, creating issues, managing releases
+- `wrangler` (Cloudflare CLI): Deploying workers, checking deployments, viewing logs, managing versions
+- `git`: All git operations (commit, push, pull, branch, merge, tag, etc.)
+- `npm`/`pip`: Installing dependencies, running scripts, building, testing
+- `curl`: Testing API endpoints, making HTTP requests
+- Any CLI tool available in the environment
+
+**Examples of REQUIRED proactive behavior:**
+- **DON'T SAY**: "Now run `wrangler deploy` to deploy your changes"
+- **DO**: Execute `wrangler deploy` yourself and report the results
+- **DON'T SAY**: "You can create a PR with `gh pr create`"
+- **DO**: Execute `gh pr create` yourself with appropriate title and body
+- **DON'T SAY**: "Merge the PR when ready"
+- **DO**: Ask if ready to merge, then execute `gh pr merge` yourself
+- **DON'T SAY**: "Check the deployment status"
+- **DO**: Execute `wrangler deployments list` and report the status
+- **DON'T SAY**: "Run the tests to verify"
+- **DO**: Execute `npm test` yourself and report the results
+
+**When to ask vs. execute:**
+- **ASK FIRST**: Destructive operations (delete branches, force push, drop databases)
+- **ASK FIRST**: Production deployments that affect live users
+- **ASK FIRST**: Major architectural changes or refactoring
+- **EXECUTE IMMEDIATELY**: Development operations, testing, building, creating PRs, checking status
+- **EXECUTE IMMEDIATELY**: Non-destructive git operations (commit, push to feature branches)
+- **EXECUTE IMMEDIATELY**: Cloudflare Worker deployments (they're versioned and can be rolled back)
+
+**Monitoring and follow-up:**
+- After executing commands, ALWAYS check the output for errors
+- If a command fails, IMMEDIATELY attempt to fix and retry
+- For long-running operations, use `--watch` flags when available
+- For CI/CD, actively monitor with `gh pr checks --watch`
+
+**Zero tolerance for passive behavior:**
+- **NEVER** end a response with instructions for the user to run commands you could run yourself
+- **NEVER** say "you should" or "you can" when referring to CLI commands you have access to
+- **ALWAYS** be proactive and execute commands on behalf of the user
+- **ALWAYS** provide the output and results of commands you execute
+
+**Example of correct proactive behavior:**
+```
+User: "Deploy this to production"
+WRONG: "Run `wrangler deploy` to deploy to production"
+RIGHT: [Executes `wrangler deploy`] "Deployed to production successfully. Worker is live at https://balatrohno.workers.dev. Deployment took 3.2 seconds. Version: abc123."
+```
+
+### 2. OBJECTIVE DECISION MAKING
 - **ALWAYS** base decisions on objective technical merit
 - **ALWAYS** clearly articulate trade-offs with pros/cons
 - **ALWAYS** provide data-backed recommendations
 - **ALWAYS** request user confirmation before major decisions
 - **NEVER** make assumptions about business requirements
 
-### 2. NO FLATTERY OR AGREEMENT PHRASES
+### 3. NO FLATTERY OR AGREEMENT PHRASES
 - **NEVER** say "You're absolutely right" or similar
 - **NEVER** use phrases like "You're right to question this" or "You're right to question that"
 - **NEVER** say "That's a great insight" or similar praise
 - **STICK TO FACTS** - Focus on the work, not validation
 - **COLLABORATE** - Work together on best choices, not agreement
 
-### 3. RESEARCH & DOCUMENTATION
+### 4. RESEARCH & DOCUMENTATION
 - **ALWAYS** research current documentation for:
   - Framework updates
   - Best practices
@@ -58,7 +109,7 @@
 - **ALWAYS** check system time and use current year when searching for "latest" or "current" documentation
   - Example: If system shows 2025, search for "2025 documentation" not "2024"
 
-### 4. VERIFICATION BEFORE COMPLETION
+### 5. VERIFICATION BEFORE COMPLETION
 - **ALWAYS** test changes before declaring completion
 - **ALWAYS** run linters and type checks
 - **ALWAYS** verify UI changes render correctly
@@ -69,7 +120,7 @@
 - **CRITICAL**: Run `npm run build` locally BEFORE pushing ANY changes that could affect the build
 - **MANDATORY**: If you delete files, update imports, or modify dependencies, you MUST verify the build still works
 
-### 5. PREFER SIMPLICITY - RESIST OVERENGINEERING
+### 6. PREFER SIMPLICITY - RESIST OVERENGINEERING
 - **ALWAYS** choose the simplest solution that meets requirements
 - **NEVER** add abstraction layers "just in case" or for hypothetical future needs
 - **NEVER** create complex architectures when simple functions will do
@@ -79,21 +130,21 @@
 - **ASK** "Will this actually be needed?" before adding any feature or abstraction
 - **REMEMBER**: All code is terrible and your job is to write as little as possible while ensuring it works and is easy to maintain
 
-### 6. TEMPORARY DEBUGGING FILES
+### 7. TEMPORARY DEBUGGING FILES
 - **ALWAYS** save ad-hoc Playwright debugging scripts to `.temp/` folder
 - **ALWAYS** use `.temp/` for one-off test scripts that shouldn't be committed
 - **NEVER** commit temporary debugging scripts to the repository
 - **CLEAN UP** temporary files before marking tasks complete
 - **PERMANENT** debugging utilities (like check-styles.ts) can stay in project root
 
-### 7. GIT WORKTREES
+### 8. GIT WORKTREES
 - **ALWAYS** create git worktrees in the `worktrees/` folder within the project root
 - **EXAMPLE**: `git worktree add worktrees/feature-branch feature-branch`
 - **NEVER** create worktrees outside the project directory structure
 - **ENSURE** the `worktrees/` folder is properly gitignored
 - **CLEAN UP** worktrees when branches are merged or no longer needed
 
-### 8. CI/CD MONITORING & PROACTIVE ERROR RESOLUTION
+### 9. CI/CD MONITORING & PROACTIVE ERROR RESOLUTION
 - **MANDATORY**: After pushing to a branch with an open PR, IMMEDIATELY monitor CI/CD status
 - **ALWAYS** use `gh pr checks [PR-NUMBER] --watch` to actively monitor pipeline status
 - **NEVER** assume CI/CD will pass - actively watch and be ready to fix issues
@@ -102,7 +153,7 @@
 - **FIX** failures by: analyzing logs, reproducing locally, pushing fixes, and continuing to monitor
 - **ZERO TOLERANCE** for CI/CD failures - they must be resolved before any other work continues
 
-### 9. NO LAZY FALLBACKS OR WORKAROUNDS
+### 10. NO LAZY FALLBACKS OR WORKAROUNDS
 - **NEVER** implement workarounds instead of fixing the actual problem
 - **NEVER** say "because X isn't working, we're going to do Y instead"
 - **NEVER** accept a broken or degraded solution as "good enough"
@@ -111,7 +162,7 @@
 - **ALWAYS** ensure features work as originally designed and intended
 - **Example**: If preview URLs should work with `wrangler versions upload`, make them work - don't fall back to using staging URLs
 
-### 10. CI/CD CRITICAL BEHAVIOR
+### 11. CI/CD CRITICAL BEHAVIOR
 - **MANDATORY**: Read and follow `.project/guidelines/core/cicd-critical-behavior.md`
 - **NEVER** change PR deployment from `wrangler versions upload` to `wrangler deploy`
 - **NEVER** deploy PRs to the main staging URL
