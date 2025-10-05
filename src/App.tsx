@@ -289,7 +289,7 @@ function App() {
             BalatrOH NO
           </h1>
           <p className="text-gray-600 mt-2">
-            a perfectly reasonable tool for your everyday life
+            a perfectly reasonable tool
           </p>
         </div>
 
