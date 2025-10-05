@@ -1,6 +1,6 @@
 // Calculate probabilities of poker hands after discarding
 import type { Card } from './types';
-import { detectPokerHands, ALL_POKER_HANDS, type PokerHandType } from './pokerHands';
+import { detectPokerHands, ALL_POKER_HANDS } from './pokerHands';
 
 export interface HandProbabilities {
   [handType: string]: number; // 0-1 probability
