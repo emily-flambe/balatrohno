@@ -10,5 +10,5 @@ routes = [
 [build]
 command = "npm run build"
 
-[site]
-bucket = "./dist"
+[assets]
+directory = "./dist"
