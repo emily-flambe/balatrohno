@@ -14,7 +14,6 @@ interface HandDisplayProps {
   onDiscard?: () => void;
   handSize: number;
   setHandSize: (size: number) => void;
-  onCalculatingChange?: (isCalculating: boolean) => void;
 }
 
 const rankOrder: Record<Rank, number> = {
@@ -26,13 +25,14 @@ const suitOrder: Record<Suit, number> = {
   'spades': 4, 'hearts': 3, 'clubs': 2, 'diamonds': 1
 };
 
-export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand, remainingDeck, onPlay, onDiscard, handSize, setHandSize, onCalculatingChange }: HandDisplayProps) {
+export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand, remainingDeck, onPlay, onDiscard, handSize, setHandSize }: HandDisplayProps) {
   const [sortBy, setSortBy] = useState<'rank' | 'suit'>('rank');
-  const [isCalculating, setIsCalculating] = useState(false);
+  const [showPlayMessage, setShowPlayMessage] = useState(false);
 
-  const handleCalculatingChange = (calculating: boolean) => {
-    setIsCalculating(calculating);
-    onCalculatingChange?.(calculating);
+  const handlePlay = () => {
+    setShowPlayMessage(true);
+    setTimeout(() => setShowPlayMessage(false), 3000);
+    onPlay?.();
   };
 
   const sortedCards = useMemo(() => {
@@ -59,12 +59,6 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
               {cards.length} {cards.length === 1 ? 'card' : 'cards'}
             </p>
           </div>
-          {/* {isCalculating && (
-            <div className="flex items-center gap-2 text-blue-600">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
-              <span className="text-sm font-medium">Calculating...</span>
-            </div>
-          )} */}
         </div>
 
         <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-2">
@@ -110,52 +104,58 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
               ))}
             </div>
 
-            <div className="flex items-center gap-4 mb-2">
-              <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2 w-fit">
-                <label className="text-sm font-medium text-gray-700">Sort Hand:</label>
-                <button
-                  onClick={() => setSortBy('rank')}
-                  className={`px-3 py-1 text-sm rounded transition-colors ${
-                    sortBy === 'rank'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Rank
-                </button>
-                <button
-                  onClick={() => setSortBy('suit')}
-                  className={`px-3 py-1 text-sm rounded transition-colors ${
-                    sortBy === 'suit'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Suit
-                </button>
-              </div>
+            <div className="mb-2">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2 w-fit">
+                  <label className="text-sm font-medium text-gray-700">Sort Hand:</label>
+                  <button
+                    onClick={() => setSortBy('rank')}
+                    className={`px-3 py-1 text-sm rounded transition-colors ${
+                      sortBy === 'rank'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Rank
+                  </button>
+                  <button
+                    onClick={() => setSortBy('suit')}
+                    className={`px-3 py-1 text-sm rounded transition-colors ${
+                      sortBy === 'suit'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Suit
+                  </button>
+                </div>
 
-              {selectedForDiscard && selectedForDiscard.size > 0 && (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={onPlay}
-                    disabled={!onPlay}
+                    onClick={handlePlay}
+                    disabled={!selectedForDiscard || selectedForDiscard.size === 0}
                     className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                   >
                     Play
                   </button>
                   <button
                     onClick={onDiscard}
-                    disabled={!onDiscard}
+                    disabled={!selectedForDiscard || selectedForDiscard.size === 0}
                     className="px-4 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                   >
                     Discard
                   </button>
-                  {selectedForDiscard.size > 5 && (
+                  {selectedForDiscard && selectedForDiscard.size > 5 && (
                     <span className="text-sm text-red-600 font-medium">
                       Maximum 5 cards
                     </span>
                   )}
+                </div>
+              </div>
+
+              {showPlayMessage && (
+                <div className="text-sm text-gray-600 italic">
+                  "Play" not yet implemented lmao
                 </div>
               )}
             </div>
@@ -168,7 +168,6 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
               currentHand={cards}
               selectedForDiscard={selectedForDiscard || new Set()}
               remainingDeck={remainingDeck}
-              onCalculatingChange={handleCalculatingChange}
             />
           </div>
         )}

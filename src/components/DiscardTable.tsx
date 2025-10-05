@@ -1,11 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import type { Card, Rank, Suit } from '../lib/types';
 
 interface DiscardTableProps {
   selectedForDiscard: string[];
   remainingDeck: Card[];
-  isCalculating?: boolean;
-  onCalculatingChange?: (isCalculating: boolean) => void;
 }
 
 const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -18,30 +16,8 @@ const suitLabels: Record<Suit, string> = {
   spades: '♠ Spades'
 };
 
-export default function DiscardTable({ selectedForDiscard, remainingDeck, isCalculating = false, onCalculatingChange }: DiscardTableProps) {
+export default function DiscardTable({ selectedForDiscard, remainingDeck }: DiscardTableProps) {
   const [isSpecificCardsExpanded, setIsSpecificCardsExpanded] = useState(false);
-  const onCalculatingChangeRef = useRef(onCalculatingChange);
-
-  useEffect(() => {
-    onCalculatingChangeRef.current = onCalculatingChange;
-  }, [onCalculatingChange]);
-
-  useEffect(() => {
-    // Only show loading for 5 discards
-    if (selectedForDiscard.length === 5) {
-      onCalculatingChangeRef.current?.(true);
-
-      // Use setTimeout to ensure UI updates before calculation
-      const timer = setTimeout(() => {
-        onCalculatingChangeRef.current?.(false);
-      }, 50);
-
-      return () => clearTimeout(timer);
-    } else {
-      // For < 5 discards, no loading state needed
-      onCalculatingChangeRef.current?.(false);
-    }
-  }, [selectedForDiscard]);
 
   if (selectedForDiscard.length === 0) {
     return (
@@ -190,7 +166,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck, isCalc
   };
 
   return (
-    <div className="w-full relative">
+    <div className="w-full">
       <div>
         <div className="px-4 py-3 bg-gray-100 rounded-lg mb-2">
           <h3 className="text-lg font-semibold text-gray-800">
@@ -308,15 +284,6 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck, isCalc
       </table>
       </div>
       </div>
-
-      {/* {isCalculating && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="flex items-center gap-2 bg-white px-4 py-3 rounded-lg shadow-md">
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
-            <span className="text-sm font-medium text-gray-700">Calculating probabilities...</span>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 }

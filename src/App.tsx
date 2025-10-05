@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { Card } from './lib/types';
 import { useDeck } from './hooks/useDeck';
 import { DeckControls } from './components/DeckControls';
 import { DeckDisplay } from './components/DeckDisplay';
@@ -8,8 +9,13 @@ import DiscardTable from './components/DiscardTable';
 
 type CardLocation = 'deck' | 'hand' | 'discarded';
 
+type GameState = {
+  deck: Card[];
+  cardLocations: Map<string, CardLocation>;
+};
+
 function App() {
-  const { deck, addCard, removeCard, duplicateCards, undo, redo, canUndo, canRedo, reset } = useDeck();
+  const { deck, addCard, removeCard, duplicateCards, reset: resetDeck } = useDeck();
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
   const [cardLocations, setCardLocations] = useState<Map<string, CardLocation>>(new Map());
   const [actionMenuCard, setActionMenuCard] = useState<string | null>(null);
@@ -18,7 +24,42 @@ function App() {
   const [selectedForDiscard, setSelectedForDiscard] = useState<Set<string>>(new Set());
   const [showAddCard, setShowAddCard] = useState(false);
   const [handSize, setHandSize] = useState<number>(7);
-  const [isCalculating, setIsCalculating] = useState(false);
+  const [gameHistory, setGameHistory] = useState<GameState[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const saveGameState = useCallback(() => {
+    const newState: GameState = {
+      deck: [...deck],
+      cardLocations: new Map(cardLocations)
+    };
+    setGameHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push(newState);
+      return newHistory;
+    });
+    setHistoryIndex(prev => prev + 1);
+  }, [deck, cardLocations, historyIndex]);
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      const state = gameHistory[newIndex];
+      setHistoryIndex(newIndex);
+      setCardLocations(new Map(state.cardLocations));
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < gameHistory.length - 1) {
+      const newIndex = historyIndex + 1;
+      const state = gameHistory[newIndex];
+      setHistoryIndex(newIndex);
+      setCardLocations(new Map(state.cardLocations));
+    }
+  };
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < gameHistory.length - 1;
 
   useEffect(() => {
     setCardLocations(prev => {
@@ -41,6 +82,12 @@ function App() {
       return next;
     });
   };
+
+  useEffect(() => {
+    if (handCards.length > 0) {
+      saveGameState();
+    }
+  }, [cardLocations]);
 
   const returnCardToDeck = (cardId: string) => {
     setCardLocations(prev => {
@@ -212,13 +259,15 @@ function App() {
   };
 
   const handleReset = () => {
-    reset();
+    resetDeck();
     setSelectedCards(new Set());
     setCardLocations(new Map());
     setActionMenuCard(null);
     setActionMenuType(null);
     setSelectedForDiscard(new Set());
     setShowAddCard(false);
+    setGameHistory([]);
+    setHistoryIndex(-1);
   };
 
   const handCards = deck.filter(card => cardLocations.get(card.id) === 'hand');
@@ -235,7 +284,21 @@ function App() {
         </div>
 
         {handCards.length > 0 && (
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-end gap-2 mb-2">
+            <button
+              onClick={undo}
+              disabled={!canUndo}
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+            >
+              Undo
+            </button>
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+            >
+              Redo
+            </button>
             <button
               onClick={handleReset}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
@@ -252,8 +315,6 @@ function App() {
                 key={`discard-${selectedForDiscard.size}`}
                 selectedForDiscard={Array.from(selectedForDiscard)}
                 remainingDeck={remainingDeck}
-                isCalculating={isCalculating}
-                onCalculatingChange={setIsCalculating}
               />
             </div>
           </div>
@@ -272,7 +333,6 @@ function App() {
                   onDiscard={handleDiscard}
                   handSize={handSize}
                   setHandSize={setHandSize}
-                  onCalculatingChange={setIsCalculating}
                 />
               </div>
 
@@ -283,10 +343,6 @@ function App() {
                   onToggleCard={handleToggleCard}
                   onDeleteSelected={handleDeleteSelected}
                   onDuplicateSelected={handleDuplicateSelected}
-                  onUndo={undo}
-                  onRedo={redo}
-                  canUndo={canUndo}
-                  canRedo={canRedo}
                   onAddCard={() => setShowAddCard(!showAddCard)}
                   onAddToHand={handleAddToHand}
                   showAddCard={showAddCard}

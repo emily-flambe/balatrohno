@@ -8,10 +8,6 @@ interface DeckDisplayProps {
   onToggleCard: (id: string) => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
   onAddCard?: () => void;
   onAddToHand?: () => void;
   showAddCard?: boolean;
@@ -24,10 +20,6 @@ export function DeckDisplay({
   onToggleCard,
   onDeleteSelected,
   onDuplicateSelected,
-  onUndo,
-  onRedo,
-  canUndo,
-  canRedo,
   onAddCard,
   onAddToHand,
   showAddCard,
@@ -36,17 +28,33 @@ export function DeckDisplay({
   const [rankFilters, setRankFilters] = useState<Set<Rank>>(new Set());
   const [suitFilters, setSuitFilters] = useState<Set<Suit>>(new Set());
   const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<'suit' | 'rank'>('suit');
 
   const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
   const suits: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
 
   const filteredDeck = useMemo(() => {
-    return deck.filter(card => {
+    const filtered = deck.filter(card => {
       const rankMatch = rankFilters.size === 0 || rankFilters.has(card.rank);
       const suitMatch = suitFilters.size === 0 || suitFilters.has(card.suit);
       return rankMatch && suitMatch;
     });
-  }, [deck, rankFilters, suitFilters]);
+
+    // Sort the filtered deck
+    return filtered.sort((a, b) => {
+      if (sortBy === 'suit') {
+        // Sort by suit first, then rank
+        const suitOrder = suits.indexOf(a.suit) - suits.indexOf(b.suit);
+        if (suitOrder !== 0) return suitOrder;
+        return ranks.indexOf(a.rank) - ranks.indexOf(b.rank);
+      } else {
+        // Sort by rank first, then suit
+        const rankOrder = ranks.indexOf(a.rank) - ranks.indexOf(b.rank);
+        if (rankOrder !== 0) return rankOrder;
+        return suits.indexOf(a.suit) - suits.indexOf(b.suit);
+      }
+    });
+  }, [deck, rankFilters, suitFilters, sortBy]);
 
   const hasFilters = rankFilters.size > 0 || suitFilters.size > 0;
   const hasSelection = selectedCards.size > 0;
@@ -125,25 +133,6 @@ export function DeckDisplay({
               </div>
             )}
           </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={onUndo}
-              disabled={!canUndo}
-              className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Undo"
-            >
-              Undo
-            </button>
-            <button
-              onClick={onRedo}
-              disabled={!canRedo}
-              className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Redo"
-            >
-              Redo
-            </button>
-          </div>
         </div>
 
         {hasSelection && (
@@ -173,15 +162,40 @@ export function DeckDisplay({
         )}
       </div>
 
-      {/* Select All Button */}
+      {/* Sort and Select All Controls */}
       {filteredDeck.length > 0 && (
         <div className="mb-3">
-          <button
-            onClick={toggleSelectAll}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-          >
-            {allVisibleSelected ? 'Deselect all' : 'Select all'}
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Sort:</span>
+              <button
+                onClick={() => setSortBy('suit')}
+                className={`px-3 py-1 text-sm rounded border transition-colors ${
+                  sortBy === 'suit'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                }`}
+              >
+                Suit
+              </button>
+              <button
+                onClick={() => setSortBy('rank')}
+                className={`px-3 py-1 text-sm rounded border transition-colors ${
+                  sortBy === 'rank'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                }`}
+              >
+                Rank
+              </button>
+            </div>
+            <button
+              onClick={toggleSelectAll}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              {allVisibleSelected ? 'Deselect all' : 'Select all'}
+            </button>
+          </div>
           {hasFilters && (
             <div className="mt-2 text-xs text-yellow-700">
               Filters have been applied and some cards may be hidden from view.{' '}
