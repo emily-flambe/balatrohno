@@ -302,7 +302,7 @@ function App() {
                 BalatrOH NO
               </h1>
               <p className="text-gray-600 mt-2">
-                a perfectly reasonable tool
+                a very good tool
               </p>
             </div>
             <a
@@ -313,7 +313,7 @@ function App() {
               <img
                 src="/joker.png"
                 alt="Joker"
-                className="w-28 h-28 object-contain hover:opacity-80 transition-opacity"
+                className="w-28 h-28 object-contain hover:opacity-80 transition-opacity rotate-180"
               />
             </a>
           </div>
