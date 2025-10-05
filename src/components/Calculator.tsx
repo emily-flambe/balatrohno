@@ -139,7 +139,7 @@ export default function Calculator({ deck }: CalculatorProps) {
           disabled={!isValid || loading}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
         >
-          {loading ? 'Calculating...' : 'Calculate Probability'}
+          {loading ? 'Calculating...' : 'Calculate'}
         </button>
 
         {/* Validation Errors */}

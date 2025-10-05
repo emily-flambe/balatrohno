@@ -8,6 +8,10 @@ interface DeckDisplayProps {
   onToggleCard: (id: string) => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 export function DeckDisplay({
@@ -15,7 +19,11 @@ export function DeckDisplay({
   selectedCards,
   onToggleCard,
   onDeleteSelected,
-  onDuplicateSelected
+  onDuplicateSelected,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo
 }: DeckDisplayProps) {
   const [rankFilters, setRankFilters] = useState<Set<Rank>>(new Set());
   const [suitFilters, setSuitFilters] = useState<Set<Suit>>(new Set());
@@ -93,22 +101,40 @@ export function DeckDisplay({
           </p>
         </div>
 
-        {hasSelection && (
-          <div className="flex gap-2">
-            <button
-              onClick={onDuplicateSelected}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Duplicate
-            </button>
-            <button
-              onClick={onDeleteSelected}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
-        )}
+        <div className="flex gap-2">
+          <button
+            onClick={onUndo}
+            disabled={!canUndo}
+            className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Undo"
+          >
+            Undo
+          </button>
+          <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Redo"
+          >
+            Redo
+          </button>
+          {hasSelection && (
+            <>
+              <button
+                onClick={onDuplicateSelected}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Duplicate
+              </button>
+              <button
+                onClick={onDeleteSelected}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Filter Section */}

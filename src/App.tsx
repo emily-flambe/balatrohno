@@ -5,7 +5,7 @@ import { DeckDisplay } from './components/DeckDisplay';
 import Calculator from './components/Calculator';
 
 function App() {
-  const { deck, addCard, removeCard, duplicateCards } = useDeck();
+  const { deck, addCard, removeCard, duplicateCards, undo, redo, canUndo, canRedo } = useDeck();
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
 
   const handleToggleCard = (id: string) => {
@@ -34,12 +34,9 @@ function App() {
     <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Balatro Card Probability Calculator
+          <h1 className="text-4xl font-bold text-gray-900">
+            BalatrOH NO
           </h1>
-          <p className="text-gray-600">
-            Quick probability calculator for Balatro players
-          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -60,6 +57,10 @@ function App() {
                   onToggleCard={handleToggleCard}
                   onDeleteSelected={handleDeleteSelected}
                   onDuplicateSelected={handleDuplicateSelected}
+                  onUndo={undo}
+                  onRedo={redo}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
                 />
               </div>
             </div>
