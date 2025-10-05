@@ -282,8 +282,8 @@ function App() {
   const remainingDeck = deckCards; // Cards to draw from (deck excludes hand cards)
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 px-4">
-      <div className="max-w-[1400px] mx-auto">
+    <div className="min-h-screen bg-gray-100 py-6 px-1">
+      <div className="max-w-[1450px] mx-auto">
         <div className="relative text-center mb-8">
           <div className="absolute right-0 top-0">
             <a
@@ -331,7 +331,7 @@ function App() {
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
           <div className="lg:w-[26rem] flex-shrink-0">
             <div className="bg-white rounded-lg shadow-md p-6">
               <DiscardTable
@@ -343,7 +343,7 @@ function App() {
           </div>
 
           <div className="flex-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-4">
               <div className="mb-8">
                 <HandDisplay
                   cards={handCards}
