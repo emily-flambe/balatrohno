@@ -1,10 +1,34 @@
+import { useState } from 'react';
 import { useDeck } from './hooks/useDeck';
 import { DeckControls } from './components/DeckControls';
 import { DeckDisplay } from './components/DeckDisplay';
 import Calculator from './components/Calculator';
 
 function App() {
-  const { deck, addCard, removeCard } = useDeck();
+  const { deck, addCard, removeCard, duplicateCards } = useDeck();
+  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
+
+  const handleToggleCard = (id: string) => {
+    setSelectedCards(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    selectedCards.forEach(id => removeCard(id));
+    setSelectedCards(new Set());
+  };
+
+  const handleDuplicateSelected = () => {
+    duplicateCards(Array.from(selectedCards));
+    setSelectedCards(new Set());
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
@@ -18,17 +42,28 @@ function App() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <DeckControls onAddCard={addCard} />
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <Calculator deck={deck} />
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <Calculator deck={deck} />
-          </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <DeckDisplay deck={deck} onRemoveCard={removeCard} />
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <DeckControls onAddCard={addCard} />
+
+              <div className="mt-8">
+                <DeckDisplay
+                  deck={deck}
+                  selectedCards={selectedCards}
+                  onToggleCard={handleToggleCard}
+                  onDeleteSelected={handleDeleteSelected}
+                  onDuplicateSelected={handleDuplicateSelected}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

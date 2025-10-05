@@ -13,5 +13,16 @@ export function useDeck() {
     setDeck(prevDeck => prevDeck.filter(card => card.id !== id));
   };
 
-  return { deck, addCard, removeCard };
+  const duplicateCards = (ids: string[]) => {
+    setDeck(prevDeck => {
+      const cardsToDuplicate = prevDeck.filter(card => ids.includes(card.id));
+      const duplicates = cardsToDuplicate.map(card => ({
+        ...card,
+        id: crypto.randomUUID()
+      }));
+      return [...prevDeck, ...duplicates];
+    });
+  };
+
+  return { deck, addCard, removeCard, duplicateCards };
 }

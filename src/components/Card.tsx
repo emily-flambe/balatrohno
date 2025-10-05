@@ -2,7 +2,8 @@ import type { Card as CardType } from '../lib/types';
 
 interface CardProps {
   card: CardType;
-  onRemove: (id: string) => void;
+  isSelected: boolean;
+  onToggle: (id: string) => void;
 }
 
 const suitSymbols: Record<string, string> = {
@@ -19,22 +20,28 @@ const suitColors: Record<string, string> = {
   spades: 'text-gray-900'
 };
 
-export function Card({ card, onRemove }: CardProps) {
+export function Card({ card, isSelected, onToggle }: CardProps) {
   return (
-    <button
-      onClick={() => onRemove(card.id)}
-      className={`
-        border-2 border-gray-300 rounded-lg p-3
-        hover:border-red-500 hover:bg-red-50
-        transition-colors duration-200
-        cursor-pointer
-        flex flex-col items-center justify-center
-        min-h-20
-        ${suitColors[card.suit]}
-      `}
-    >
-      <span className="text-xl font-bold">{card.rank}</span>
-      <span className="text-2xl">{suitSymbols[card.suit]}</span>
-    </button>
+    <div className="relative">
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => onToggle(card.id)}
+        className="absolute top-1 left-1 w-4 h-4 cursor-pointer z-10"
+      />
+      <div
+        className={`
+          border-2 rounded-lg p-3
+          transition-colors duration-200
+          flex flex-col items-center justify-center
+          min-h-20
+          ${suitColors[card.suit]}
+          ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}
+        `}
+      >
+        <span className="text-xl font-bold">{card.rank}</span>
+        <span className="text-2xl">{suitSymbols[card.suit]}</span>
+      </div>
+    </div>
   );
 }
