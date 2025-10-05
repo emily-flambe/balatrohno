@@ -200,11 +200,19 @@ Before marking any task complete:
 - [ ] Documentation updated (if needed)
 - [ ] No console errors or warnings
 
-**CRITICAL RULE**: NEVER declare work complete or create pull requests without running:
+**CRITICAL RULE**: NEVER declare work complete, push code, or create pull requests without running:
 1. `npm run lint` - Fix ALL errors before proceeding
 2. `npm run type-check` - Fix ALL type errors
-3. `npm test` - Ensure ALL tests pass
+3. `npm test` - Ensure ALL tests pass (MANDATORY - NO EXCEPTIONS)
 4. `npm run build` - MUST BUILD SUCCESSFULLY before pushing to GitHub
+
+**ABSOLUTE REQUIREMENT FOR ALL CODE CHANGES:**
+- **ALWAYS** run `npm test -- --run` before ANY git push
+- **ALWAYS** ensure 100% of tests pass before pushing
+- **NEVER** push code that breaks existing tests
+- **NEVER** assume tests will pass in CI - verify locally first
+- Tests protect the integrity of critical math functions and business logic
+- Broken tests in production = broken user experience
 
 ### Test Resolution Strategy
 When tests fail, **NEVER** force them to pass through inappropriate means:
