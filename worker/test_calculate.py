@@ -109,19 +109,21 @@ def test_count_matching_cards():
         {"rank": "Q", "suit": "clubs"}
     ]
 
-    # Count by rank
-    assert count_matching_cards(deck, "rank", "A") == 2
-    assert count_matching_cards(deck, "rank", "K") == 1
-    assert count_matching_cards(deck, "rank", "J") == 0
+    # Count by rank only (any suit)
+    assert count_matching_cards(deck, rank="A", suit="any") == 2
+    assert count_matching_cards(deck, rank="K", suit="any") == 1
+    assert count_matching_cards(deck, rank="J", suit="any") == 0
 
-    # Count by suit
-    assert count_matching_cards(deck, "suit", "hearts") == 2
-    assert count_matching_cards(deck, "suit", "clubs") == 1
-    assert count_matching_cards(deck, "suit", "spades") == 0
+    # Count by suit only (any rank)
+    assert count_matching_cards(deck, rank="any", suit="hearts") == 2
+    assert count_matching_cards(deck, rank="any", suit="clubs") == 1
+    assert count_matching_cards(deck, rank="any", suit="spades") == 0
 
-    # Count by color
-    assert count_matching_cards(deck, "color", "red") == 3
-    assert count_matching_cards(deck, "color", "black") == 1
+    # Count by both rank and suit (specific card)
+    assert count_matching_cards(deck, rank="A", suit="hearts") == 1
+    assert count_matching_cards(deck, rank="A", suit="diamonds") == 1
+    assert count_matching_cards(deck, rank="K", suit="hearts") == 1
+    assert count_matching_cards(deck, rank="A", suit="clubs") == 0
 
     print("✓ Card counting tests passed")
 

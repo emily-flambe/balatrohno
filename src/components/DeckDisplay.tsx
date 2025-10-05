@@ -1,4 +1,5 @@
-import type { Card as CardType } from '../lib/types';
+import { useState, useMemo } from 'react';
+import type { Card as CardType, Rank, Suit } from '../lib/types';
 import { Card } from './Card';
 
 interface DeckDisplayProps {
@@ -16,7 +17,67 @@ export function DeckDisplay({
   onDeleteSelected,
   onDuplicateSelected
 }: DeckDisplayProps) {
+  const [rankFilters, setRankFilters] = useState<Set<Rank>>(new Set());
+  const [suitFilters, setSuitFilters] = useState<Set<Suit>>(new Set());
+  const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(false);
+
+  const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  const suits: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
+
+  const filteredDeck = useMemo(() => {
+    return deck.filter(card => {
+      const rankMatch = rankFilters.size === 0 || rankFilters.has(card.rank);
+      const suitMatch = suitFilters.size === 0 || suitFilters.has(card.suit);
+      return rankMatch && suitMatch;
+    });
+  }, [deck, rankFilters, suitFilters]);
+
+  const hasFilters = rankFilters.size > 0 || suitFilters.size > 0;
   const hasSelection = selectedCards.size > 0;
+  const allVisibleSelected = filteredDeck.length > 0 && filteredDeck.every(card => selectedCards.has(card.id));
+
+  const toggleRankFilter = (rank: Rank) => {
+    const newFilters = new Set(rankFilters);
+    if (newFilters.has(rank)) {
+      newFilters.delete(rank);
+    } else {
+      newFilters.add(rank);
+    }
+    setRankFilters(newFilters);
+  };
+
+  const toggleSuitFilter = (suit: Suit) => {
+    const newFilters = new Set(suitFilters);
+    if (newFilters.has(suit)) {
+      newFilters.delete(suit);
+    } else {
+      newFilters.add(suit);
+    }
+    setSuitFilters(newFilters);
+  };
+
+  const toggleSelectAll = () => {
+    if (allVisibleSelected) {
+      // Deselect all visible cards
+      filteredDeck.forEach(card => {
+        if (selectedCards.has(card.id)) {
+          onToggleCard(card.id);
+        }
+      });
+    } else {
+      // Select all visible cards
+      filteredDeck.forEach(card => {
+        if (!selectedCards.has(card.id)) {
+          onToggleCard(card.id);
+        }
+      });
+    }
+  };
+
+  const clearFilters = () => {
+    setRankFilters(new Set());
+    setSuitFilters(new Set());
+  };
 
   return (
     <div className="w-full">
@@ -26,8 +87,9 @@ export function DeckDisplay({
             Current Deck
           </h2>
           <p className="text-gray-600">
-            {deck.length} {deck.length === 1 ? 'card' : 'cards'}
-            {hasSelection && ` (${selectedCards.size} selected)`}
+            {deck.length} {deck.length === 1 ? 'card' : 'cards'} total
+            {hasFilters && ` (showing ${filteredDeck.length})`}
+            {hasSelection && ` - ${selectedCards.size} selected`}
           </p>
         </div>
 
@@ -49,8 +111,102 @@ export function DeckDisplay({
         )}
       </div>
 
+      {/* Filter Section */}
+      <div className="mb-4 bg-gray-50 rounded-lg border border-gray-200">
+        <button
+          onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+          className="w-full p-4 flex items-center justify-between hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <span className={`text-sm font-semibold text-gray-500 transition-transform ${isFilterExpanded ? 'rotate-90' : ''}`}>
+              &gt;
+            </span>
+            <h3 className="text-sm font-semibold text-gray-700">
+              Filter Cards
+              {hasFilters && <span className="ml-2 text-xs text-blue-600">({rankFilters.size + suitFilters.size} active)</span>}
+            </h3>
+          </div>
+          {hasFilters && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                clearFilters();
+              }}
+              className="text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              Clear all filters
+            </button>
+          )}
+        </button>
+
+        {isFilterExpanded && (
+          <div className="px-4 pb-4">
+            {/* Rank Filters */}
+            <div className="mb-3">
+              <label className="block text-xs font-medium text-gray-600 mb-2">Rank</label>
+              <div className="flex flex-wrap gap-1">
+                {ranks.map(rank => (
+                  <button
+                    key={rank}
+                    onClick={() => toggleRankFilter(rank)}
+                    className={`px-2 py-1 text-xs rounded border transition-colors ${
+                      rankFilters.has(rank)
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                    }`}
+                  >
+                    {rank}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Suit Filters */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">Suit</label>
+              <div className="flex flex-wrap gap-1">
+                {suits.map(suit => (
+                  <button
+                    key={suit}
+                    onClick={() => toggleSuitFilter(suit)}
+                    className={`px-3 py-1 text-xs rounded border transition-colors ${
+                      suitFilters.has(suit)
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                    }`}
+                  >
+                    {suit.charAt(0).toUpperCase() + suit.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Filter Warning Banner */}
+      {hasFilters && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            Filtering active: Showing {filteredDeck.length} of {deck.length} cards
+          </p>
+        </div>
+      )}
+
+      {/* Select All Button */}
+      {filteredDeck.length > 0 && (
+        <div className="mb-3">
+          <button
+            onClick={toggleSelectAll}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            {allVisibleSelected ? 'Deselect all visible' : 'Select all visible'}
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-13 gap-2">
-        {deck.map(card => (
+        {filteredDeck.map(card => (
           <Card
             key={card.id}
             card={card}
@@ -63,6 +219,12 @@ export function DeckDisplay({
       {deck.length === 0 && (
         <p className="text-center text-gray-500 mt-8">
           No cards in deck. Add cards using the controls above.
+        </p>
+      )}
+
+      {deck.length > 0 && filteredDeck.length === 0 && (
+        <p className="text-center text-gray-500 mt-8">
+          No cards match the current filters.
         </p>
       )}
     </div>

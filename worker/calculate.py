@@ -97,18 +97,21 @@ def calculate_probability(deck_size, matching_cards, draw_count, min_matches):
         return 1 - hypergeom_cdf(min_matches - 1, deck_size, matching_cards, draw_count)
 
 
-def count_matching_cards(deck, search_type, search_value):
-    """Count cards matching search criteria."""
+def count_matching_cards(deck, rank, suit):
+    """Count cards matching search criteria.
+
+    Args:
+        deck: List of card dictionaries with 'rank' and 'suit' keys
+        rank: Specific rank to match, or 'any' to match all ranks
+        suit: Specific suit to match, or 'any' to match all suits
+
+    Returns:
+        Number of cards matching the criteria
+    """
     count = 0
     for card in deck:
-        if search_type == 'rank':
-            if card['rank'] == search_value:
-                count += 1
-        elif search_type == 'suit':
-            if card['suit'] == search_value:
-                count += 1
-        elif search_type == 'color':
-            card_color = 'red' if card['suit'] in ['hearts', 'diamonds'] else 'black'
-            if card_color == search_value:
-                count += 1
+        rank_match = rank == 'any' or card['rank'] == rank
+        suit_match = suit == 'any' or card['suit'] == suit
+        if rank_match and suit_match:
+            count += 1
     return count

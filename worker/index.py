@@ -49,15 +49,19 @@ class Default(WorkerEntrypoint):
             deck = body.get('deck', [])
             draw_count = body.get('drawCount')
             min_matches = body.get('minMatches')
-            search_type = body.get('searchType')
-            search_value = body.get('searchValue')
+            rank = body.get('rank')
+            suit = body.get('suit')
 
             # Validate required fields
-            if not all([deck, draw_count is not None, min_matches is not None, search_type, search_value]):
+            if not all([deck, draw_count is not None, min_matches is not None, rank, suit]):
                 return error_response('Missing required fields')
 
+            # Validate at least one filter is specified
+            if rank == 'any' and suit == 'any':
+                return error_response('Must specify at least one filter (rank or suit)')
+
             # Count matching cards
-            matching_cards = count_matching_cards(deck, search_type, search_value)
+            matching_cards = count_matching_cards(deck, rank, suit)
             deck_size = len(deck)
 
             # Calculate probability

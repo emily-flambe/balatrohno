@@ -12,8 +12,8 @@ export interface CalculationRequest {
   deck: Card[];
   drawCount: number;
   minMatches: number;
-  searchType: 'rank' | 'suit' | 'color';
-  searchValue: string;
+  rank: Rank | 'any';
+  suit: Suit | 'any';
 }
 
 export interface CalculationResponse {
