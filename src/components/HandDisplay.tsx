@@ -7,6 +7,7 @@ interface HandDisplayProps {
   onCardClick: (id: string) => void;
   selectedForDiscard?: Set<string>;
   onToggleDiscard?: (id: string) => void;
+  onDrawHand: (handSize: number) => void;
 }
 
 const rankOrder: Record<Rank, number> = {
@@ -18,8 +19,9 @@ const suitOrder: Record<Suit, number> = {
   'spades': 4, 'hearts': 3, 'clubs': 2, 'diamonds': 1
 };
 
-export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard }: HandDisplayProps) {
+export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand }: HandDisplayProps) {
   const [sortBy, setSortBy] = useState<'rank' | 'suit'>('rank');
+  const [handSize, setHandSize] = useState<number>(7);
 
   const sortedCards = useMemo(() => {
     return [...cards].sort((a, b) => {
@@ -37,21 +39,39 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
 
   return (
     <div className="w-full mb-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Your Hand</h2>
-          <p className="text-gray-600">
-            {cards.length} {cards.length === 1 ? 'card' : 'cards'}
-            {selectedForDiscard && selectedForDiscard.size > 0 && (
-              <span className="text-orange-600 ml-2">
-                ({selectedForDiscard.size} selected for discard)
-              </span>
-            )}
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">Your Hand</h2>
+        <p className="text-gray-600">
+          {cards.length} {cards.length === 1 ? 'card' : 'cards'}
+          {selectedForDiscard && selectedForDiscard.size > 0 && (
+            <span className="text-orange-600 ml-2">
+              ({selectedForDiscard.size} selected for discard)
+            </span>
+          )}
+        </p>
+      </div>
+
+      {cards.length === 0 ? (
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
+          <p className="text-center text-gray-500">
+            Click cards in deck to build your hand
           </p>
         </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-13 gap-2 mb-4">
+            {sortedCards.map(card => (
+              <HandCard
+                key={card.id}
+                card={card}
+                onClick={onCardClick}
+                isSelectedForDiscard={selectedForDiscard?.has(card.id)}
+                onToggleDiscard={onToggleDiscard}
+              />
+            ))}
+          </div>
 
-        {cards.length > 0 && (
-          <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2">
+          <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2 w-fit mb-2">
             <label className="text-sm font-medium text-gray-700">Sort Hand:</label>
             <button
               onClick={() => setSortBy('rank')}
@@ -74,28 +94,29 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
               Suit
             </button>
           </div>
-        )}
-      </div>
-
-      {cards.length === 0 ? (
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
-          <p className="text-center text-gray-500">
-            Click cards in deck to build your hand
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-13 gap-2">
-          {sortedCards.map(card => (
-            <HandCard
-              key={card.id}
-              card={card}
-              onClick={onCardClick}
-              isSelectedForDiscard={selectedForDiscard?.has(card.id)}
-              onToggleDiscard={onToggleDiscard}
-            />
-          ))}
-        </div>
+        </>
       )}
+
+      <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-2 w-fit">
+        <label htmlFor="handSize" className="text-sm font-medium text-gray-700">
+          Hand size:
+        </label>
+        <input
+          id="handSize"
+          type="number"
+          min="1"
+          max="52"
+          value={handSize}
+          onChange={(e) => setHandSize(parseInt(e.target.value) || 1)}
+          className="w-16 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={() => onDrawHand(handSize)}
+          className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          Draw Hand
+        </button>
+      </div>
     </div>
   );
 }

@@ -90,7 +90,7 @@ function calculateNOfAKindProbability(
     return probPair;
   }
 
-  const ranksWithEnough = Array.from(rankCounts.entries()).filter(([_, count]) => count >= minMatches);
+  const ranksWithEnough = Array.from(rankCounts.entries()).filter(([, count]) => count >= minMatches);
 
   if (ranksWithEnough.length === 0) {
     return 0;
@@ -98,7 +98,7 @@ function calculateNOfAKindProbability(
 
   let totalProb = 0;
 
-  for (const [rank, k] of ranksWithEnough) {
+  for (const [, k] of ranksWithEnough) {
     for (let i = minMatches; i <= Math.min(numDiscards, k); i++) {
       const ways = combination(k, i) * combination(deckSize - k, numDiscards - i);
       const total = combination(deckSize, numDiscards);

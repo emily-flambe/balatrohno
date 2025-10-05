@@ -57,6 +57,28 @@ function App() {
     });
   };
 
+  const handleDrawHand = (handSize: number) => {
+    const availableDeckCards = deckCards.filter(card => !selectedCards.has(card.id));
+    const drawCount = Math.min(handSize, availableDeckCards.length);
+
+    // Fisher-Yates shuffle for random sample
+    const shuffled = [...availableDeckCards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Take first drawCount cards and move to hand
+    const cardsToMove = shuffled.slice(0, drawCount);
+    setCardLocations(prev => {
+      const next = new Map(prev);
+      cardsToMove.forEach(card => {
+        next.set(card.id, 'hand');
+      });
+      return next;
+    });
+  };
+
   const handleAddToHand = () => {
     selectedCards.forEach(id => {
       if (cardLocations.get(id) === 'deck') {
@@ -144,6 +166,7 @@ function App() {
                   onCardClick={(id) => handleHandCardClick(id)}
                   selectedForDiscard={selectedForDiscard}
                   onToggleDiscard={handleToggleDiscard}
+                  onDrawHand={handleDrawHand}
                 />
               </div>
 

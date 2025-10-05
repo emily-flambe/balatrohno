@@ -63,9 +63,11 @@ P(X >= k) = 1 - P(X <= k-1)
 
 ## Implementation
 
-### Native Implementation
+The application provides **two implementations** of the hypergeometric distribution calculation:
 
-This application uses a native implementation of the hypergeometric distribution (no external dependencies like scipy).
+### Backend Implementation (Python)
+
+Server-side calculation using the **complement approach** for efficiency:
 
 ```python
 def hypergeom_pmf(k, M, n, N):
@@ -86,19 +88,46 @@ def hypergeom_cdf(k, M, n, N):
     for i in range(int(k) + 1):
         cumulative += hypergeom_pmf(i, M, n, N)
     return cumulative
-```
 
-### Optimization for Common Case
-
-For the common case of "at least 1 match", we use a shortcut:
-
-```python
+# Main calculation using complement
 if min_matches == 1:
     # P(X >= 1) = 1 - P(X = 0)
     return 1 - hypergeom_pmf(0, deck_size, matching_cards, draw_count)
+else:
+    # P(X >= k) = 1 - P(X <= k-1)
+    return 1 - hypergeom_cdf(min_matches - 1, deck_size, matching_cards, draw_count)
 ```
 
-This is more efficient than calculating the full CDF.
+This approach is optimized for the common "at least 1 match" case by avoiding the full CDF calculation.
+
+### Frontend Implementation (TypeScript)
+
+Client-side calculation using the **direct summation approach**:
+
+```typescript
+const combination = (n: number, r: number): number => {
+  if (r > n || r < 0) return 0;
+  if (r === 0 || r === n) return 1;
+
+  let result = 1;
+  for (let i = 1; i <= r; i++) {
+    result = result * (n - i + 1) / i;
+  }
+  return result;
+};
+
+// Calculate P(X >= minMatches) by summing individual probabilities
+let probability = 0;
+for (let i = minMatches; i <= Math.min(drawCount, targetCards); i++) {
+  const ways = combination(targetCards, i) * combination(nonTargetCards, drawCount - i);
+  const total = combination(deckSize, drawCount);
+  probability += ways / total;
+}
+```
+
+This approach directly sums P(X = minMatches) + P(X = minMatches+1) + ... + P(X = min(n, k)).
+
+Both implementations are **mathematically equivalent** and produce identical results. The frontend implementation allows for instant calculations without network requests.
 
 ## Examples
 
@@ -171,21 +200,18 @@ calculate_probability(52, 4, 5, 5)  # Returns 0.0
 
 ### Guaranteed Scenarios
 
-When there aren't enough non-matching cards to avoid getting matches:
+When there aren't enough non-matching cards to fill the draw without getting matches:
 
 ```python
 # 50 Aces in 52 cards, draw 5, need 1 Ace
 # Only 2 non-Aces exist, can't draw 5 cards without getting an Ace
 calculate_probability(52, 50, 5, 1)  # Returns 1.0
+
+# This uses the formula: non_matching_cards < (draw_count - min_matches + 1)
+# In this case: 2 < (5 - 1 + 1) = 2 < 5, so guaranteed
 ```
 
-### Zero Matches
-
-Requesting at least 0 matches is always certain:
-
-```python
-calculate_probability(52, 4, 5, 0)  # Returns 1.0
-```
+The logic accounts for the minimum matches requirement: if you need at least N matches and there aren't enough non-matching cards to avoid getting N matches, the probability is 100%.
 
 ## Input Validation
 
@@ -213,7 +239,19 @@ For typical card game scenarios (n <= 52, k <= 13), calculations are near-instan
 
 The implementation uses integer arithmetic for binomial coefficients until the final division, minimizing floating-point errors. The iterative multiplication approach avoids factorial overflow for reasonable input sizes.
 
-## Why Not Use Approximations?
+## Why Not Use scipy or Approximations?
+
+### Why Native Implementation Instead of scipy?
+
+Cloudflare Workers Python environment does not support scipy. While scipy would provide a well-tested hypergeometric distribution implementation, the platform constraint requires a native solution.
+
+The native implementation is appropriate because:
+- Small population sizes (52-card deck) make exact calculation fast
+- Hypergeometric distribution formulas are straightforward to implement
+- Comprehensive test suite validates correctness
+- No external dependencies simplifies deployment
+
+### Why Exact Calculation Instead of Approximations?
 
 For small population sizes (like a 52-card deck), exact calculation is:
 - Fast enough (sub-millisecond)
@@ -229,4 +267,10 @@ Normal or binomial approximations would introduce unnecessary error for negligib
 
 ## Summary
 
-This application uses exact hypergeometric distribution calculations to provide accurate probabilities for card draw scenarios. The implementation is optimized for the common "at least 1" case while maintaining accuracy for all valid inputs through native calculation without external dependencies.
+This application uses exact hypergeometric distribution calculations to provide accurate probabilities for card draw scenarios:
+
+- **Dual Implementation**: Both backend (Python) and frontend (TypeScript) implement the same mathematical approach
+- **Native Calculation**: No external dependencies (scipy not supported in Cloudflare Workers)
+- **Optimized**: Backend uses complement approach for efficiency; frontend uses direct summation
+- **Validated**: Comprehensive test suite ensures correctness against known probability values
+- **Fast**: Sub-millisecond calculations for typical card game scenarios
