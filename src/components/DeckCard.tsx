@@ -25,8 +25,8 @@ export function DeckCard({ card, isSelected, onToggle }: DeckCardProps) {
     <div
       onClick={() => onToggle(card.id)}
       className={`
-        w-16
-        border-2 rounded-lg p-3
+        w-[68px]
+        border-2 rounded-lg p-2
         transition-colors duration-200
         flex flex-col items-center justify-center
         aspect-[5/7]
@@ -35,8 +35,8 @@ export function DeckCard({ card, isSelected, onToggle }: DeckCardProps) {
         ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}
       `}
     >
-      <span className="text-xl font-bold">{card.rank}</span>
-      <span className="text-2xl">{suitSymbols[card.suit]}</span>
+      <span className="text-lg font-bold">{card.rank}</span>
+      <span className="text-xl">{suitSymbols[card.suit]}</span>
     </div>
   );
 }

@@ -26,6 +26,7 @@ function App() {
   const [handSize, setHandSize] = useState<number>(7);
   const [gameHistory, setGameHistory] = useState<GameState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isUndoRedoing, setIsUndoRedoing] = useState(false);
 
   const saveGameState = useCallback(() => {
     const newState: GameState = {
@@ -44,6 +45,7 @@ function App() {
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
       const state = gameHistory[newIndex];
+      setIsUndoRedoing(true);
       setHistoryIndex(newIndex);
       setCardLocations(new Map(state.cardLocations));
     }
@@ -53,6 +55,7 @@ function App() {
     if (historyIndex < gameHistory.length - 1) {
       const newIndex = historyIndex + 1;
       const state = gameHistory[newIndex];
+      setIsUndoRedoing(true);
       setHistoryIndex(newIndex);
       setCardLocations(new Map(state.cardLocations));
     }
@@ -84,6 +87,10 @@ function App() {
   };
 
   useEffect(() => {
+    if (isUndoRedoing) {
+      setIsUndoRedoing(false);
+      return;
+    }
     if (handCards.length > 0) {
       saveGameState();
     }
@@ -275,8 +282,8 @@ function App() {
   const remainingDeck = deckCards; // Cards to draw from (deck excludes hand cards)
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-100 py-6 px-4">
+      <div className="max-w-[1400px] mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">
             BalatrOH NO

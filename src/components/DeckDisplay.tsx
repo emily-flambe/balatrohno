@@ -56,6 +56,23 @@ export function DeckDisplay({
     });
   }, [deck, rankFilters, suitFilters, sortBy]);
 
+  const groupedDeck = useMemo(() => {
+    const groups: Array<{ key: string; cards: CardType[] }> = [];
+
+    filteredDeck.forEach(card => {
+      const groupKey = sortBy === 'suit' ? card.suit : card.rank;
+
+      let group = groups.find(g => g.key === groupKey);
+      if (!group) {
+        group = { key: groupKey, cards: [] };
+        groups.push(group);
+      }
+      group.cards.push(card);
+    });
+
+    return groups;
+  }, [filteredDeck, sortBy]);
+
   const hasFilters = rankFilters.size > 0 || suitFilters.size > 0;
   const hasSelection = selectedCards.size > 0;
   const allVisibleSelected = filteredDeck.length > 0 && filteredDeck.every(card => selectedCards.has(card.id));
@@ -210,14 +227,20 @@ export function DeckDisplay({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        {filteredDeck.map(card => (
-          <DeckCard
-            key={card.id}
-            card={card}
-            isSelected={selectedCards.has(card.id)}
-            onToggle={onToggleCard}
-          />
+      <div className="space-y-4">
+        {groupedDeck.map(group => (
+          <div key={group.key}>
+            <div className="flex flex-wrap gap-2">
+              {group.cards.map(card => (
+                <DeckCard
+                  key={card.id}
+                  card={card}
+                  isSelected={selectedCards.has(card.id)}
+                  onToggle={onToggleCard}
+                />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
