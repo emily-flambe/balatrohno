@@ -167,6 +167,7 @@ function App() {
                   selectedForDiscard={selectedForDiscard}
                   onToggleDiscard={handleToggleDiscard}
                   onDrawHand={handleDrawHand}
+                  remainingDeck={remainingDeck}
                 />
               </div>
 
