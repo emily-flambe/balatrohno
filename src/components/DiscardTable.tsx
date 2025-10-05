@@ -17,7 +17,6 @@ const suitLabels: Record<Suit, string> = {
 };
 
 export default function DiscardTable({ selectedForDiscard, remainingDeck }: DiscardTableProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isSpecificCardsExpanded, setIsSpecificCardsExpanded] = useState(false);
 
   if (selectedForDiscard.length === 0) {
@@ -145,7 +144,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
     // These events are mutually exclusive (can't have 3+ Aces AND 3+ Kings when drawing only 3 cards)
     // So we can sum the individual probabilities
 
-    const ranksWithEnough = Array.from(rankCounts.entries()).filter(([_, count]) => count >= minMatches);
+    const ranksWithEnough = Array.from(rankCounts.entries()).filter(([, count]) => count >= minMatches);
 
     if (ranksWithEnough.length === 0) {
       return '0.0%';
@@ -153,7 +152,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
 
     let totalProb = 0;
 
-    for (const [rank, k] of ranksWithEnough) {
+    for (const [, k] of ranksWithEnough) {
       // P(at least minMatches of this specific rank when drawing drawCount cards)
       for (let i = minMatches; i <= Math.min(drawCount, k); i++) {
         const ways = combination(k, i) * combination(deckSize - k, drawCount - i);
@@ -168,18 +167,13 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
 
   return (
     <div className="w-full">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg mb-2"
-      >
+      <div className="px-4 py-3 bg-gray-100 rounded-lg mb-2">
         <h3 className="text-lg font-semibold text-gray-800">
-          Discard Probabilities ({numDiscards} cards selected)
+          Odds of Stuff ({numDiscards} cards selected)
         </h3>
-        <span className="text-gray-600">{isExpanded ? '▼' : '▶'}</span>
-      </button>
+      </div>
 
-      {isExpanded && (
-        <div className="overflow-x-auto">
+      <div className="overflow-x-auto">
           <table className="w-full border-collapse bg-white rounded-lg shadow-md">
             <thead className="bg-gray-100 sticky top-0">
               <tr>
@@ -284,8 +278,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
           )}
         </tbody>
       </table>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { Card as CardType, Rank, Suit } from '../lib/types';
-import { Card } from './Card';
+import { DeckCard } from './DeckCard';
 
 interface DeckDisplayProps {
   deck: CardType[];
@@ -12,6 +12,8 @@ interface DeckDisplayProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  onAddCard?: () => void;
+  onAddToHand?: () => void;
 }
 
 export function DeckDisplay({
@@ -23,7 +25,9 @@ export function DeckDisplay({
   onUndo,
   onRedo,
   canUndo,
-  canRedo
+  canRedo,
+  onAddCard,
+  onAddToHand
 }: DeckDisplayProps) {
   const [rankFilters, setRankFilters] = useState<Set<Rank>>(new Set());
   const [suitFilters, setSuitFilters] = useState<Set<Suit>>(new Set());
@@ -89,52 +93,73 @@ export function DeckDisplay({
 
   return (
     <div className="w-full">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            Current Deck
-          </h2>
-          <p className="text-gray-600">
-            {deck.length} {deck.length === 1 ? 'card' : 'cards'} total
-            {hasFilters && ` (showing ${filteredDeck.length})`}
-            {hasSelection && ` - ${selectedCards.size} selected`}
-          </p>
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Current Deck
+            </h2>
+            <p className="text-gray-600">
+              {deck.length} {deck.length === 1 ? 'card' : 'cards'} total
+              {hasFilters && ` (showing ${filteredDeck.length})`}
+              {hasSelection && ` - ${selectedCards.size} selected`}
+            </p>
+            {onAddCard && (
+              <button
+                onClick={onAddCard}
+                className="mt-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                title="Add Card to Deck"
+              >
+                Add Card to Deck
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={onUndo}
+              disabled={!canUndo}
+              className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Undo"
+            >
+              Undo
+            </button>
+            <button
+              onClick={onRedo}
+              disabled={!canRedo}
+              className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Redo"
+            >
+              Redo
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={onUndo}
-            disabled={!canUndo}
-            className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Undo"
-          >
-            Undo
-          </button>
-          <button
-            onClick={onRedo}
-            disabled={!canRedo}
-            className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Redo"
-          >
-            Redo
-          </button>
-          {hasSelection && (
-            <>
+        {hasSelection && (
+          <div className="flex justify-end gap-2">
+            {onAddToHand && (
               <button
-                onClick={onDuplicateSelected}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={onAddToHand}
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                title="Add to Hand"
               >
-                Duplicate
+                Add to Hand
               </button>
-              <button
-                onClick={onDeleteSelected}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Delete
-              </button>
-            </>
-          )}
-        </div>
+            )}
+            <button
+              onClick={onDuplicateSelected}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Duplicate
+            </button>
+            <button
+              onClick={onDeleteSelected}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Discard
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filter Section */}
@@ -233,7 +258,7 @@ export function DeckDisplay({
 
       <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-13 gap-2">
         {filteredDeck.map(card => (
-          <Card
+          <DeckCard
             key={card.id}
             card={card}
             isSelected={selectedCards.has(card.id)}

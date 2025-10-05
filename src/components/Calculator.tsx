@@ -1,54 +1,78 @@
 import { useState } from 'react'
-import type { Card, CalculationRequest, CalculationResponse, Rank, Suit } from '../lib/types'
+import type { Card, Rank, Suit } from '../lib/types'
 
 interface CalculatorProps {
   deck: Card[]
 }
 
+interface CalculationResult {
+  probability: number
+  percentage: string
+}
+
 export default function Calculator({ deck }: CalculatorProps) {
+  const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const [drawCount, setDrawCount] = useState<number>(5)
   const [minMatches, setMinMatches] = useState<number>(1)
   const [rank, setRank] = useState<Rank | 'any'>('any')
   const [suit, setSuit] = useState<Suit | 'any'>('any')
-  const [result, setResult] = useState<CalculationResponse | null>(null)
+  const [result, setResult] = useState<CalculationResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
   const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
   const suits = ['hearts', 'diamonds', 'clubs', 'spades']
 
-  const handleCalculate = async () => {
+  const combination = (n: number, r: number): number => {
+    if (r > n || r < 0) return 0;
+    if (r === 0 || r === n) return 1;
+
+    let result = 1;
+    for (let i = 1; i <= r; i++) {
+      result = result * (n - i + 1) / i;
+    }
+    return result;
+  };
+
+  const calculateProbability = (): number => {
+    const targetCards = deck.filter(card => {
+      const rankMatch = rank === 'any' || card.rank === rank;
+      const suitMatch = suit === 'any' || card.suit === suit;
+      return rankMatch && suitMatch;
+    });
+
+    const deckSize = deck.length;
+    const k = targetCards.length;
+    const n = drawCount;
+
+    if (k === 0 || deckSize === 0 || n > deckSize) {
+      return 0;
+    }
+
+    const nonTargetCards = deckSize - k;
+
+    let probability = 0;
+    for (let i = minMatches; i <= Math.min(n, k); i++) {
+      const ways = combination(k, i) * combination(nonTargetCards, n - i);
+      const total = combination(deckSize, n);
+      probability += ways / total;
+    }
+
+    return probability;
+  };
+
+  const handleCalculate = () => {
     setError(null)
     setResult(null)
     setLoading(true)
 
     try {
-      const request: CalculationRequest = {
-        deck,
-        drawCount,
-        minMatches,
-        rank,
-        suit,
-      }
+      const probability = calculateProbability();
+      const percentage = `${(probability * 100).toFixed(1)}%`;
 
-      const response = await fetch('/api/calculate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Calculation failed')
-        return
-      }
-
-      setResult(data)
+      setResult({ probability, percentage });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Network error')
+      setError(err instanceof Error ? err.message : 'Calculation error')
     } finally {
       setLoading(false)
     }
@@ -57,9 +81,16 @@ export default function Calculator({ deck }: CalculatorProps) {
   const isValid = drawCount > 0 && minMatches > 0 && drawCount <= deck.length && minMatches <= drawCount
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Calculate Probability</h2>
+    <div className="w-full">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg mb-2"
+      >
+        <h2 className="text-lg font-semibold text-gray-800">Calculate Probability</h2>
+        <span className="text-gray-600">{isExpanded ? '▼' : '▶'}</span>
+      </button>
 
+      {isExpanded && (
       <div className="space-y-4">
         {/* Draw Count */}
         <div>
@@ -180,6 +211,7 @@ export default function Calculator({ deck }: CalculatorProps) {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }
