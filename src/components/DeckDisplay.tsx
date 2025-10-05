@@ -109,16 +109,16 @@ export function DeckDisplay({
                 {hasFilters && ` (showing ${filteredDeck.length})`}
                 {hasSelection && ` - ${selectedCards.size} selected`}
               </p>
-              {onAddCard && (
-                <button
-                  onClick={onAddCard}
-                  className="mt-2 w-10 h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center text-xl font-bold"
-                  title="Add Card to Deck"
-                >
-                  +
-                </button>
-              )}
             </div>
+            {onAddCard && (
+              <button
+                onClick={onAddCard}
+                className="w-10 h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center text-xl font-bold"
+                title="Add Card to Deck"
+              >
+                +
+              </button>
+            )}
             {showAddCard && addCardComponent && (
               <div className="mt-8">
                 {addCardComponent}
@@ -173,8 +173,42 @@ export function DeckDisplay({
         )}
       </div>
 
+      {/* Select All Button */}
+      {filteredDeck.length > 0 && (
+        <div className="mb-3">
+          <button
+            onClick={toggleSelectAll}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            {allVisibleSelected ? 'Deselect all' : 'Select all'}
+          </button>
+          {hasFilters && (
+            <div className="mt-2 text-xs text-yellow-700">
+              Filters have been applied and some cards may be hidden from view.{' '}
+              <button
+                onClick={clearFilters}
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        {filteredDeck.map(card => (
+          <DeckCard
+            key={card.id}
+            card={card}
+            isSelected={selectedCards.has(card.id)}
+            onToggle={onToggleCard}
+          />
+        ))}
+      </div>
+
       {/* Filter Section */}
-      <div className="mb-4 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="mt-4 bg-gray-50 rounded-lg border border-gray-200">
         <div className="p-4 flex items-center justify-between">
           <button
             onClick={() => setIsFilterExpanded(!isFilterExpanded)}
@@ -242,40 +276,6 @@ export function DeckDisplay({
             </div>
           </div>
         )}
-      </div>
-
-      {/* Select All Button */}
-      {filteredDeck.length > 0 && (
-        <div className="mb-3">
-          <button
-            onClick={toggleSelectAll}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-          >
-            {allVisibleSelected ? 'Deselect all' : 'Select all'}
-          </button>
-          {hasFilters && (
-            <div className="mt-2 text-xs text-yellow-700">
-              Filters have been applied and some cards may be hidden from view.{' '}
-              <button
-                onClick={clearFilters}
-                className="text-blue-600 hover:text-blue-800 underline"
-              >
-                Clear filters
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="flex flex-wrap gap-2">
-        {filteredDeck.map(card => (
-          <DeckCard
-            key={card.id}
-            card={card}
-            isSelected={selectedCards.has(card.id)}
-            onToggle={onToggleCard}
-          />
-        ))}
       </div>
 
       {deck.length === 0 && (
