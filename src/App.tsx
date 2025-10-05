@@ -302,7 +302,7 @@ function App() {
                 BalatrOH NO
               </h1>
               <p className="text-gray-600 mt-2">
-                a very good tool
+                stupida fucking game
               </p>
             </div>
             <a
