@@ -17,7 +17,14 @@ def success_response(probability):
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
     }
-    percentage = f"{probability * 100:.2f}%"
+    # Use more precision for very small probabilities
+    if probability < 0.0001:
+        percentage = f"{probability * 100:.6f}%"
+    elif probability < 0.01:
+        percentage = f"{probability * 100:.4f}%"
+    else:
+        percentage = f"{probability * 100:.2f}%"
+
     body = json.dumps({
         'probability': probability,
         'percentage': percentage
@@ -53,10 +60,6 @@ class Default(WorkerEntrypoint):
                 # Validate required fields
                 if not all([deck, draw_count is not None, min_matches is not None, rank, suit]):
                     return error_response('Missing required fields')
-
-                # Validate at least one filter is specified
-                if rank == 'any' and suit == 'any':
-                    return error_response('Must specify at least one filter (rank or suit)')
 
                 # Count matching cards
                 matching_cards = count_matching_cards(deck, rank, suit)

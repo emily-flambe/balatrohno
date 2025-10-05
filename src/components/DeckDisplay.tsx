@@ -114,21 +114,19 @@ export function DeckDisplay({
       {/* Filter Section */}
       <div className="mb-4 bg-gray-50 rounded-lg border border-gray-200">
         <div className="p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-              className="text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all"
-              aria-label={isFilterExpanded ? 'Collapse filters' : 'Expand filters'}
-            >
-              <span className={`inline-block transition-transform ${isFilterExpanded ? 'rotate-90' : ''}`}>
-                &gt;
-              </span>
-            </button>
+          <button
+            onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+            className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+            aria-label={isFilterExpanded ? 'Collapse filters' : 'Expand filters'}
+          >
+            <span className={`text-sm font-semibold text-gray-500 inline-block transition-transform ${isFilterExpanded ? 'rotate-90' : ''}`}>
+              &gt;
+            </span>
             <h3 className="text-sm font-semibold text-gray-700">
               Filter Cards Displayed
               {hasFilters && <span className="ml-2 text-xs text-blue-600">({rankFilters.size + suitFilters.size} active)</span>}
             </h3>
-          </div>
+          </button>
           {hasFilters && (
             <button
               onClick={clearFilters}
@@ -184,15 +182,6 @@ export function DeckDisplay({
         )}
       </div>
 
-      {/* Filter Warning Banner */}
-      {hasFilters && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">
-            Filtering active: Showing {filteredDeck.length} of {deck.length} cards
-          </p>
-        </div>
-      )}
-
       {/* Select All Button */}
       {filteredDeck.length > 0 && (
         <div className="mb-3">
@@ -200,8 +189,19 @@ export function DeckDisplay({
             onClick={toggleSelectAll}
             className="text-sm text-blue-600 hover:text-blue-800 underline"
           >
-            {allVisibleSelected ? 'Deselect all visible' : 'Select all visible'}
+            {allVisibleSelected ? 'Deselect all' : 'Select all'}
           </button>
+          {hasFilters && (
+            <div className="mt-2 text-xs text-yellow-700">
+              Filters have been applied and some cards may be hidden from view.{' '}
+              <button
+                onClick={clearFilters}
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
         </div>
       )}
 

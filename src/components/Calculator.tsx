@@ -54,7 +54,7 @@ export default function Calculator({ deck }: CalculatorProps) {
     }
   }
 
-  const isValid = drawCount > 0 && minMatches > 0 && drawCount <= deck.length && minMatches <= drawCount && (rank !== 'any' || suit !== 'any')
+  const isValid = drawCount > 0 && minMatches > 0 && drawCount <= deck.length && minMatches <= drawCount
 
   return (
     <div className="space-y-6">
@@ -149,7 +149,6 @@ export default function Calculator({ deck }: CalculatorProps) {
             {minMatches > drawCount && <p>Minimum matches cannot exceed draw count</p>}
             {drawCount < 1 && <p>Draw count must be at least 1</p>}
             {minMatches < 1 && <p>Minimum matches must be at least 1</p>}
-            {rank === 'any' && suit === 'any' && <p>Must select at least one filter (rank or suit)</p>}
           </div>
         )}
 
@@ -165,10 +164,18 @@ export default function Calculator({ deck }: CalculatorProps) {
           <div className="bg-green-50 border border-green-200 text-green-900 px-6 py-4 rounded-md space-y-2">
             <div className="text-4xl font-bold">{result.percentage}</div>
             <div className="text-sm">
-              Probability of drawing at least {minMatches} {rank !== 'any' && suit !== 'any' ? `${rank} of ${suit}` : rank !== 'any' ? `${rank}s` : `${suit}s`} in {drawCount} cards
+              Probability of drawing at least {minMatches} {
+                rank !== 'any' && suit !== 'any'
+                  ? `${rank} of ${suit}`
+                  : rank !== 'any'
+                    ? `${rank}s`
+                    : suit !== 'any'
+                      ? suit.charAt(0).toUpperCase() + suit.slice(1)
+                      : 'cards'
+              } in {drawCount} cards
             </div>
             <div className="text-xs text-green-700">
-              (probability: {result.probability.toFixed(4)})
+              (probability: {result.probability < 0.0001 ? result.probability.toExponential(4) : result.probability.toFixed(4)})
             </div>
           </div>
         )}
