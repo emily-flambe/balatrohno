@@ -284,7 +284,39 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-1">
       <div className="max-w-[1450px] mx-auto">
-        <div className="relative text-center mb-8">
+        <div className="relative text-center mb-12 pt-4">
+          <div className="flex items-center justify-center gap-16">
+            <a
+              href="https://www.emilycogsdill.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/joker.png"
+                alt="Joker"
+                className="w-28 h-28 object-contain hover:opacity-80 transition-opacity"
+              />
+            </a>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900">
+                BalatrOH NO
+              </h1>
+              <p className="text-gray-600 mt-2">
+                a perfectly reasonable tool
+              </p>
+            </div>
+            <a
+              href="https://www.emilycogsdill.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/joker.png"
+                alt="Joker"
+                className="w-28 h-28 object-contain hover:opacity-80 transition-opacity"
+              />
+            </a>
+          </div>
           <div className="absolute right-0 top-0">
             <a
               href="https://github.com/emily-flambe/balatrohno"
@@ -298,12 +330,6 @@ function App() {
               </svg>
             </a>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900">
-            BalatrOH NO
-          </h1>
-          <p className="text-gray-600 mt-2">
-            a perfectly reasonable tool
-          </p>
         </div>
 
         {handCards.length > 0 && (
