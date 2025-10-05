@@ -28,6 +28,7 @@ const suitOrder: Record<Suit, number> = {
 
 export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand, remainingDeck, onPlay, onDiscard, handSize, setHandSize, onStartGame }: HandDisplayProps) {
   const [sortBy, setSortBy] = useState<'rank' | 'suit'>('rank');
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const sortedCards = useMemo(() => {
     return [...cards].sort((a, b) => {
@@ -46,11 +47,19 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
   return (
     <div className="w-full mb-6">
       <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Your Hand</h2>
-          <p className="text-gray-600">
-            {cards.length} {cards.length === 1 ? 'card' : 'cards'}
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Your Hand</h2>
+            <p className="text-gray-600">
+              {cards.length} {cards.length === 1 ? 'card' : 'cards'}
+            </p>
+          </div>
+          {isCalculating && (
+            <div className="flex items-center gap-2 text-blue-600">
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
+              <span className="text-sm font-medium">Calculating...</span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-2">
@@ -154,6 +163,7 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
               currentHand={cards}
               selectedForDiscard={selectedForDiscard || new Set()}
               remainingDeck={remainingDeck}
+              onCalculatingChange={setIsCalculating}
             />
           </div>
         )}
