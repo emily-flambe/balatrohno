@@ -22,64 +22,44 @@ A web-based tool that calculates the probability of drawing specific cards from 
 ### Prerequisites
 
 - Node.js 20+
-- Python 3.11+
 - npm 10+
+- wrangler CLI (`npm install -g wrangler`)
 
-### Setup
+### Development
 
 ```bash
 # Install dependencies
 npm install
-pip install -r python/requirements.txt
 
-# Install wrangler CLI
-npm install -g wrangler
+# Start dev servers (backend + frontend)
+make dev
 
-# Start development
-npm run dev                    # Terminal 1: Frontend
-wrangler dev worker/index.py   # Terminal 2: Backend
+# Run tests
+python3 worker/test_calculate.py
 ```
 
 Open http://localhost:5173
 
-For detailed setup instructions, see [.project/setup.md](.project/setup.md).
+### Deployment
 
-## Usage
-
-1. Start with a standard 52-card deck
-2. Modify your deck to match your current game state
-3. Enter your draw parameters
-4. Get instant probability results
-
-## Example Queries
-
-- "What's the probability of drawing at least 1 Ace in 5 cards?"
-- "What's the probability of drawing at least 2 Hearts in 7 cards?"
-- "What's the probability of drawing at least 3 Red cards in 8 cards?"
+```bash
+# Deploy to Cloudflare Workers
+make deploy
+```
 
 ## Technology Stack
 
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS v4
-- **Backend**: Cloudflare Workers + Python 3.11+
-- **Calculation**: scipy.stats.hypergeom
-- **Deployment**: Cloudflare Workers
+- **Backend**: Cloudflare Workers + Python
+- **Calculation**: Native hypergeometric distribution (no scipy - not supported in Cloudflare Workers)
+- **Deployment**: Cloudflare Workers (free tier)
 
-## Development
+## Documentation
 
-For implementation details, architecture, and development guidelines, see the [.project/](.project/) directory.
-
-## Deployment
-
-```bash
-# Build and deploy to Cloudflare Workers
-npm run build
-wrangler deploy
-```
+- **[METHODOLOGY.md](METHODOLOGY.md)** - How probability calculations work
+- **[.project/](.project/)** - Implementation details, architecture, and development guidelines
+- **[.project/setup.md](.project/setup.md)** - Detailed setup instructions
 
 ## License
 
 MIT
-
-## Note
-
-This is a simple MVP focused on core functionality. Keep it simple. Build what's needed, nothing more.

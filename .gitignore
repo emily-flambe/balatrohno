@@ -40,3 +40,9 @@ wrangler.toml.lock
 # OS
 .DS_Store
 Thumbs.db
+
+# Python virtual environment
+.venv
+venv
+*.pyc
+__pycache__

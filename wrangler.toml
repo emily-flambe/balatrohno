@@ -3,8 +3,12 @@ main = "worker/index.py"
 compatibility_date = "2025-10-04"
 compatibility_flags = ["python_workers"]
 
+routes = [
+  { pattern = "balatrohno.emilycogsdill.com/*", zone_name = "emilycogsdill.com" }
+]
+
 [build]
 command = "npm run build"
 
-[site]
-bucket = "./dist"
+[assets]
+directory = "./dist"
