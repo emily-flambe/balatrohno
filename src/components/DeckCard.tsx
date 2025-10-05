@@ -25,10 +25,11 @@ export function DeckCard({ card, isSelected, onToggle }: DeckCardProps) {
     <div
       onClick={() => onToggle(card.id)}
       className={`
+        w-16
         border-2 rounded-lg p-3
         transition-colors duration-200
         flex flex-col items-center justify-center
-        min-h-20
+        aspect-[5/7]
         cursor-pointer hover:border-blue-400
         ${suitColors[card.suit]}
         ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}

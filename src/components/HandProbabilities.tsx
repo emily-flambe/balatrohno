@@ -15,7 +15,7 @@ export function HandProbabilities({ currentHand, selectedForDiscard, remainingDe
   }, [currentHand, selectedForDiscard, remainingDeck]);
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 h-full">
       <h3 className="text-sm font-semibold text-gray-700 mb-3">
         Hand Probabilities
         <span className="block text-xs font-normal text-gray-500">(after discard & draw)</span>
@@ -28,8 +28,8 @@ export function HandProbabilities({ currentHand, selectedForDiscard, remainingDe
           const isImpossible = probability === 0;
 
           return (
-            <div key={handType} className="flex items-center justify-between text-xs">
-              <span className={`font-medium ${
+            <div key={handType} className="flex items-center justify-between gap-4 text-xs">
+              <span className={`font-medium whitespace-nowrap ${
                 isGuaranteed ? 'text-green-700' :
                 isImpossible ? 'text-gray-400' :
                 'text-gray-700'

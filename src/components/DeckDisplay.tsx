@@ -267,7 +267,7 @@ export function DeckDisplay({
         </div>
       )}
 
-      <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-13 gap-2">
+      <div className="flex flex-wrap gap-2">
         {filteredDeck.map(card => (
           <DeckCard
             key={card.id}

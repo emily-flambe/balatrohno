@@ -34,10 +34,11 @@ export function HandCard({ card, onClick, isSelectedForDiscard = false, onToggle
     <div
       onClick={handleClick}
       className={`
+        w-16
         border-2 rounded-lg p-3
         transition-colors duration-200
         flex flex-col items-center justify-center
-        min-h-20
+        aspect-[5/7]
         cursor-pointer
         hover:border-blue-400
         ${suitColors[card.suit]}

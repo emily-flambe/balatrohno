@@ -10,7 +10,7 @@ import Calculator from './components/Calculator';
 type CardLocation = 'deck' | 'hand' | 'discarded';
 
 function App() {
-  const { deck, addCard, removeCard, duplicateCards, undo, redo, canUndo, canRedo } = useDeck();
+  const { deck, addCard, removeCard, duplicateCards, undo, redo, canUndo, canRedo, reset } = useDeck();
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
   const [cardLocations, setCardLocations] = useState<Map<string, CardLocation>>(new Map());
   const [actionMenuCard, setActionMenuCard] = useState<string | null>(null);
@@ -18,6 +18,7 @@ function App() {
   const [actionMenuType, setActionMenuType] = useState<'hand' | 'deck' | null>(null);
   const [selectedForDiscard, setSelectedForDiscard] = useState<Set<string>>(new Set());
   const [showAddCard, setShowAddCard] = useState(false);
+  const [handSize, setHandSize] = useState<number>(7);
 
   useEffect(() => {
     setCardLocations(prev => {
@@ -100,6 +101,10 @@ function App() {
       if (next.has(id)) {
         next.delete(id);
       } else {
+        // Balatro rule: maximum 5 discards
+        if (next.size >= 5) {
+          return prev; // Don't allow more than 5 selections
+        }
         next.add(id);
       }
       return next;
@@ -206,6 +211,16 @@ function App() {
     setSelectedForDiscard(new Set());
   };
 
+  const handleReset = () => {
+    reset();
+    setSelectedCards(new Set());
+    setCardLocations(new Map());
+    setActionMenuCard(null);
+    setActionMenuType(null);
+    setSelectedForDiscard(new Set());
+    setShowAddCard(false);
+  };
+
   const handCards = deck.filter(card => cardLocations.get(card.id) === 'hand');
   const deckCards = deck.filter(card => cardLocations.get(card.id) === 'deck');
   const remainingDeck = deckCards; // Cards to draw from (deck excludes hand cards)
@@ -219,13 +234,20 @@ function App() {
           </h1>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-80 flex-shrink-0 space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <Calculator deck={deckCards} />
-            </div>
+        {handCards.length > 0 && (
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+            >
+              Reset
+            </button>
+          </div>
+        )}
 
-            {selectedForDiscard.size > 0 && (
+        <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+          {handCards.length > 0 && (
+            <div className="lg:w-[26rem] flex-shrink-0">
               <div className="bg-white rounded-lg shadow-md p-6">
                 <DiscardTable
                   key={`discard-${selectedForDiscard.size}`}
@@ -233,8 +255,8 @@ function App() {
                   remainingDeck={remainingDeck}
                 />
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="flex-1">
             <div className="bg-white rounded-lg shadow-md p-6">
@@ -248,6 +270,9 @@ function App() {
                   remainingDeck={remainingDeck}
                   onPlay={handlePlay}
                   onDiscard={handleDiscard}
+                  handSize={handSize}
+                  setHandSize={setHandSize}
+                  onStartGame={() => handleDrawHand(handSize)}
                 />
               </div>
 

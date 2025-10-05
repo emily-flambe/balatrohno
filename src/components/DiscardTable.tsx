@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Card, Rank, Suit } from '../lib/types';
 
 interface DiscardTableProps {
@@ -18,6 +18,21 @@ const suitLabels: Record<Suit, string> = {
 
 export default function DiscardTable({ selectedForDiscard, remainingDeck }: DiscardTableProps) {
   const [isSpecificCardsExpanded, setIsSpecificCardsExpanded] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(true);
+
+  useEffect(() => {
+    // Only show loading for 5 discards (heavy calculation)
+    if (selectedForDiscard.length === 5) {
+      setIsCalculating(true);
+      // Allow React to show loading state before heavy calculation
+      const timer = setTimeout(() => {
+        setIsCalculating(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    } else {
+      setIsCalculating(false);
+    }
+  }, [selectedForDiscard, remainingDeck]);
 
   if (selectedForDiscard.length === 0) {
     return (
@@ -29,7 +44,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
 
   const deckSize = remainingDeck.length;
   const numDiscards = selectedForDiscard.length; // Total cards to draw from deck
-  const nValues = Array.from({ length: numDiscards }, (_, i) => i + 1); // Min matches: 1, 2, 3, ...
+  const nValues = Array.from({ length: Math.min(numDiscards, 4) }, (_, i) => i + 1); // Min matches: 1, 2, 3, 4
 
   // Calculate P(at least minMatches of targetCards when drawing numDiscards cards)
   const calculateProbability = (targetCards: Card[], minMatches: number): string => {
@@ -166,15 +181,24 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       <div className="px-4 py-3 bg-gray-100 rounded-lg mb-2">
         <h3 className="text-lg font-semibold text-gray-800">
-          Odds Of Drawing Stuff ({numDiscards} cards selected)
+          Odds Of Drawing Stuff
         </h3>
         <p className="text-xs text-gray-600 mt-1">
-          These odds apply to the cards you are drawing after discard.
+          These odds apply to the {numDiscards} cards to be drawn after discard.
         </p>
       </div>
+
+      {isCalculating && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
+            <p className="text-sm text-gray-600 font-medium">Calculating probabilities...</p>
+          </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
           <table className="w-full border-collapse bg-white rounded-lg shadow-md">
@@ -184,7 +208,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
                   Category
                 </th>
                 {nValues.map(n => (
-                  <th key={n} className="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">
+                  <th key={n} className="border border-gray-300 px-2 py-3 text-center font-semibold text-gray-700">
                     ≥{n}
                   </th>
                 ))}
@@ -194,10 +218,10 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
           {/* N of a Kind Row */}
           <tr className="hover:bg-gray-50">
             <td className="border border-gray-300 px-4 py-2 font-semibold">
-              Any N of a Kind
+              N of a Kind
             </td>
             {nValues.map(n => (
-              <td key={n} className="border border-gray-300 px-4 py-2 text-center">
+              <td key={n} className="border border-gray-300 px-2 py-2 text-center">
                 {calculateNOfAKindProbability(n)}
               </td>
             ))}
@@ -217,7 +241,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
                   {suitLabels[suit]} ({suitCards.length})
                 </td>
                 {nValues.map(n => (
-                  <td key={n} className="border border-gray-300 px-4 py-2 text-center">
+                  <td key={n} className="border border-gray-300 px-2 py-2 text-center">
                     {calculateProbability(suitCards, n)}
                   </td>
                 ))}
@@ -239,7 +263,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
                   {rank} ({rankCards.length})
                 </td>
                 {nValues.map(n => (
-                  <td key={n} className="border border-gray-300 px-4 py-2 text-center">
+                  <td key={n} className="border border-gray-300 px-2 py-2 text-center">
                     {calculateProbability(rankCards, n)}
                   </td>
                 ))}
@@ -271,7 +295,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
                     {rank} of {suitLabels[suit]} ({cards.length})
                   </td>
                   {nValues.map(n => (
-                    <td key={n} className="border border-gray-300 px-4 py-2 text-center">
+                    <td key={n} className="border border-gray-300 px-2 py-2 text-center">
                       {calculateProbability(cards, n)}
                     </td>
                   ))}

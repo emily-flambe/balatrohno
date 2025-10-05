@@ -63,71 +63,101 @@ P(X >= k) = 1 - P(X <= k-1)
 
 ## Implementation
 
-The application provides **two implementations** of the hypergeometric distribution calculation:
+The application provides **two types of calculations**:
 
-### Backend Implementation (Python)
+### 1. Simple Card Draw Probabilities (Hypergeometric Distribution)
 
-Server-side calculation using the **complement approach** for efficiency:
+Used for calculating individual card type probabilities in the discard table:
 
-```python
-def hypergeom_pmf(k, M, n, N):
-    """
-    Calculate probability mass function for hypergeometric distribution.
-    P(X = k) = C(n, k) * C(M-n, N-k) / C(M, N)
-    """
-    numerator = binomial_coefficient(n, k) * binomial_coefficient(M - n, N - k)
-    denominator = binomial_coefficient(M, N)
-    return numerator / denominator
-
-def hypergeom_cdf(k, M, n, N):
-    """
-    Calculate cumulative distribution function.
-    P(X <= k) = sum of P(X = i) for i = 0 to k
-    """
-    cumulative = 0.0
-    for i in range(int(k) + 1):
-        cumulative += hypergeom_pmf(i, M, n, N)
-    return cumulative
-
-# Main calculation using complement
-if min_matches == 1:
-    # P(X >= 1) = 1 - P(X = 0)
-    return 1 - hypergeom_pmf(0, deck_size, matching_cards, draw_count)
-else:
-    # P(X >= k) = 1 - P(X <= k-1)
-    return 1 - hypergeom_cdf(min_matches - 1, deck_size, matching_cards, draw_count)
-```
-
-This approach is optimized for the common "at least 1 match" case by avoiding the full CDF calculation.
-
-### Frontend Implementation (TypeScript)
-
-Client-side calculation using the **direct summation approach**:
+**Frontend Implementation (TypeScript)** using the **complement approach**:
 
 ```typescript
-const combination = (n: number, r: number): number => {
-  if (r > n || r < 0) return 0;
-  if (r === 0 || r === n) return 1;
-
-  let result = 1;
-  for (let i = 1; i <= r; i++) {
-    result = result * (n - i + 1) / i;
+function calculateProbability(
+  deckSize: number,
+  matchingCards: number,
+  drawCount: number,
+  minMatches: number
+): number {
+  // Impossible scenarios
+  if (matchingCards < minMatches) {
+    return 0.0;
   }
-  return result;
-};
 
-// Calculate P(X >= minMatches) by summing individual probabilities
-let probability = 0;
-for (let i = minMatches; i <= Math.min(drawCount, targetCards); i++) {
-  const ways = combination(targetCards, i) * combination(nonTargetCards, drawCount - i);
-  const total = combination(deckSize, drawCount);
-  probability += ways / total;
+  // Guaranteed scenarios
+  const nonMatchingCards = deckSize - matchingCards;
+  if (nonMatchingCards < drawCount - minMatches + 1) {
+    return 1.0;
+  }
+
+  // Calculate P(X >= min_matches) = 1 - P(X <= min_matches - 1)
+  if (minMatches === 1) {
+    // P(X >= 1) = 1 - P(X = 0)
+    return 1 - hypergeomPmf(0, deckSize, matchingCards, drawCount);
+  } else {
+    // P(X >= min_matches) = 1 - P(X <= min_matches - 1)
+    return 1 - hypergeomCdf(minMatches - 1, deckSize, matchingCards, drawCount);
+  }
 }
 ```
 
-This approach directly sums P(X = minMatches) + P(X = minMatches+1) + ... + P(X = min(n, k)).
+This provides exact probabilities for questions like "What's the probability of drawing at least 1 Ace when discarding 3 cards?"
 
-Both implementations are **mathematically equivalent** and produce identical results. The frontend implementation allows for instant calculations without network requests.
+### 2. Poker Hand Probabilities After Discard
+
+Used for calculating complete poker hand probabilities in the hand view:
+
+**Exact Enumeration Approach**:
+
+```typescript
+function calculateHandProbabilities(
+  currentHand: Card[],
+  selectedForDiscard: Set<string>,
+  remainingDeck: Card[]
+): HandProbabilities {
+  const keptCards = currentHand.filter(card => !selectedForDiscard.has(card.id));
+  const discardCount = selectedForDiscard.size;
+
+  // Balatro rule: Maximum 5 discards
+  if (discardCount > 5) {
+    throw new Error('Cannot discard more than 5 cards in Balatro');
+  }
+
+  // Enumerate ALL possible draw outcomes
+  // C(47,5) = 1,533,939 max combinations - fast enough for exact calculation
+  const handCounts = countPokerHandsInAllCombinations(keptCards, discardCount, remainingDeck);
+
+  // Calculate exact probabilities
+  return handCounts.map(count => count / totalCombinations);
+}
+```
+
+**Why Enumeration Instead of Formula?**
+
+Poker hands don't follow simple hypergeometric distributions because:
+- Multiple overlapping patterns (e.g., Full House contains Three of a Kind)
+- Complex detection logic (e.g., Straights require specific rank sequences)
+- Conditional dependencies between hand types
+
+**Why Not Monte Carlo Sampling?**
+
+Balatro limits discards to 5 cards maximum:
+- 1 discard: 47 combinations
+- 2 discards: 1,081 combinations
+- 3 discards: 16,215 combinations
+- 4 discards: 178,365 combinations
+- 5 discards: 1,533,939 combinations
+
+All scenarios can be **exactly enumerated in <50ms**. Monte Carlo would give approximate results with unnecessary variance.
+
+**Implementation**:
+
+The code enumerates all C(n,k) combinations of drawing k cards from the remaining deck, detects poker hands for each outcome, and calculates exact probabilities as:
+
+```
+P(Two Pair) = (# outcomes with Two Pair) / (total possible outcomes)
+```
+
+This guarantees **exact results** with no approximation error.
 
 ## Examples
 
