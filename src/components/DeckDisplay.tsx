@@ -14,6 +14,8 @@ interface DeckDisplayProps {
   canRedo: boolean;
   onAddCard?: () => void;
   onAddToHand?: () => void;
+  showAddCard?: boolean;
+  addCardComponent?: React.ReactNode;
 }
 
 export function DeckDisplay({
@@ -27,7 +29,9 @@ export function DeckDisplay({
   canUndo,
   canRedo,
   onAddCard,
-  onAddToHand
+  onAddToHand,
+  showAddCard,
+  addCardComponent
 }: DeckDisplayProps) {
   const [rankFilters, setRankFilters] = useState<Set<Rank>>(new Set());
   const [suitFilters, setSuitFilters] = useState<Set<Suit>>(new Set());
@@ -95,23 +99,30 @@ export function DeckDisplay({
     <div className="w-full">
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">
-              Current Deck
-            </h2>
-            <p className="text-gray-600">
-              {deck.length} {deck.length === 1 ? 'card' : 'cards'} total
-              {hasFilters && ` (showing ${filteredDeck.length})`}
-              {hasSelection && ` - ${selectedCards.size} selected`}
-            </p>
-            {onAddCard && (
-              <button
-                onClick={onAddCard}
-                className="mt-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                title="Add Card to Deck"
-              >
-                Add Card to Deck
-              </button>
+          <div className="flex items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Current Deck
+              </h2>
+              <p className="text-gray-600">
+                {deck.length} {deck.length === 1 ? 'card' : 'cards'} total
+                {hasFilters && ` (showing ${filteredDeck.length})`}
+                {hasSelection && ` - ${selectedCards.size} selected`}
+              </p>
+              {onAddCard && (
+                <button
+                  onClick={onAddCard}
+                  className="mt-2 w-10 h-10 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center text-xl font-bold"
+                  title="Add Card to Deck"
+                >
+                  +
+                </button>
+              )}
+            </div>
+            {showAddCard && addCardComponent && (
+              <div className="mt-8">
+                {addCardComponent}
+              </div>
             )}
           </div>
 

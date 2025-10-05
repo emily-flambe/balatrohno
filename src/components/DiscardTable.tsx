@@ -169,8 +169,11 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
     <div className="w-full">
       <div className="px-4 py-3 bg-gray-100 rounded-lg mb-2">
         <h3 className="text-lg font-semibold text-gray-800">
-          Odds of Stuff ({numDiscards} cards selected)
+          Odds Of Drawing Stuff ({numDiscards} cards selected)
         </h3>
+        <p className="text-xs text-gray-600 mt-1">
+          These odds apply to the cards you are drawing after discard.
+        </p>
       </div>
 
       <div className="overflow-x-auto">

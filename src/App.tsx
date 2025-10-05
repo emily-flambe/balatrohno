@@ -171,12 +171,6 @@ function App() {
                 />
               </div>
 
-              {showAddCard && (
-                <div className="mb-8">
-                  <DeckControls onAddCard={addCard} />
-                </div>
-              )}
-
               <div className="mt-8">
                 <DeckDisplay
                   deck={deckCards}
@@ -190,6 +184,8 @@ function App() {
                   canRedo={canRedo}
                   onAddCard={() => setShowAddCard(!showAddCard)}
                   onAddToHand={handleAddToHand}
+                  showAddCard={showAddCard}
+                  addCardComponent={<DeckControls onAddCard={addCard} />}
                 />
               </div>
             </div>
