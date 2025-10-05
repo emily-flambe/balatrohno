@@ -14,7 +14,7 @@ interface HandDisplayProps {
   onDiscard?: () => void;
   handSize: number;
   setHandSize: (size: number) => void;
-  onStartGame?: () => void;
+  onCalculatingChange?: (isCalculating: boolean) => void;
 }
 
 const rankOrder: Record<Rank, number> = {
@@ -26,9 +26,14 @@ const suitOrder: Record<Suit, number> = {
   'spades': 4, 'hearts': 3, 'clubs': 2, 'diamonds': 1
 };
 
-export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand, remainingDeck, onPlay, onDiscard, handSize, setHandSize, onStartGame }: HandDisplayProps) {
+export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand, remainingDeck, onPlay, onDiscard, handSize, setHandSize, onCalculatingChange }: HandDisplayProps) {
   const [sortBy, setSortBy] = useState<'rank' | 'suit'>('rank');
   const [isCalculating, setIsCalculating] = useState(false);
+
+  const handleCalculatingChange = (calculating: boolean) => {
+    setIsCalculating(calculating);
+    onCalculatingChange?.(calculating);
+  };
 
   const sortedCards = useMemo(() => {
     return [...cards].sort((a, b) => {
@@ -54,12 +59,12 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
               {cards.length} {cards.length === 1 ? 'card' : 'cards'}
             </p>
           </div>
-          {isCalculating && (
+          {/* {isCalculating && (
             <div className="flex items-center gap-2 text-blue-600">
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
               <span className="text-sm font-medium">Calculating...</span>
             </div>
-          )}
+          )} */}
         </div>
 
         <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-2">
@@ -163,7 +168,7 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
               currentHand={cards}
               selectedForDiscard={selectedForDiscard || new Set()}
               remainingDeck={remainingDeck}
-              onCalculatingChange={setIsCalculating}
+              onCalculatingChange={handleCalculatingChange}
             />
           </div>
         )}

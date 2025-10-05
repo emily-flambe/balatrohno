@@ -1,9 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Card, Rank, Suit } from '../lib/types';
 
 interface DiscardTableProps {
   selectedForDiscard: string[];
   remainingDeck: Card[];
+  isCalculating?: boolean;
+  onCalculatingChange?: (isCalculating: boolean) => void;
 }
 
 const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -16,23 +18,30 @@ const suitLabels: Record<Suit, string> = {
   spades: '♠ Spades'
 };
 
-export default function DiscardTable({ selectedForDiscard, remainingDeck }: DiscardTableProps) {
+export default function DiscardTable({ selectedForDiscard, remainingDeck, isCalculating = false, onCalculatingChange }: DiscardTableProps) {
   const [isSpecificCardsExpanded, setIsSpecificCardsExpanded] = useState(false);
-  const [isCalculating, setIsCalculating] = useState(true);
+  const onCalculatingChangeRef = useRef(onCalculatingChange);
 
   useEffect(() => {
-    // Only show loading for 5 discards (heavy calculation)
+    onCalculatingChangeRef.current = onCalculatingChange;
+  }, [onCalculatingChange]);
+
+  useEffect(() => {
+    // Only show loading for 5 discards
     if (selectedForDiscard.length === 5) {
-      setIsCalculating(true);
-      // Allow React to show loading state before heavy calculation
+      onCalculatingChangeRef.current?.(true);
+
+      // Use setTimeout to ensure UI updates before calculation
       const timer = setTimeout(() => {
-        setIsCalculating(false);
-      }, 0);
+        onCalculatingChangeRef.current?.(false);
+      }, 50);
+
       return () => clearTimeout(timer);
     } else {
-      setIsCalculating(false);
+      // For < 5 discards, no loading state needed
+      onCalculatingChangeRef.current?.(false);
     }
-  }, [selectedForDiscard, remainingDeck]);
+  }, [selectedForDiscard]);
 
   if (selectedForDiscard.length === 0) {
     return (
@@ -182,25 +191,17 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
 
   return (
     <div className="w-full relative">
-      <div className="px-4 py-3 bg-gray-100 rounded-lg mb-2">
-        <h3 className="text-lg font-semibold text-gray-800">
-          Odds Of Drawing Stuff
-        </h3>
-        <p className="text-xs text-gray-600 mt-1">
-          These odds apply to the {numDiscards} cards to be drawn after discard.
-        </p>
-      </div>
-
-      {isCalculating && (
-        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
-            <p className="text-sm text-gray-600 font-medium">Calculating probabilities...</p>
-          </div>
+      <div>
+        <div className="px-4 py-3 bg-gray-100 rounded-lg mb-2">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Odds Of Drawing Stuff
+          </h3>
+          <p className="text-xs text-gray-600 mt-1">
+            These odds apply to the {numDiscards} cards to be drawn after discard.
+          </p>
         </div>
-      )}
 
-      <div className="overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full border-collapse bg-white rounded-lg shadow-md">
             <thead className="bg-gray-100 sticky top-0">
               <tr>
@@ -306,6 +307,16 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
         </tbody>
       </table>
       </div>
+      </div>
+
+      {/* {isCalculating && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="flex items-center gap-2 bg-white px-4 py-3 rounded-lg shadow-md">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
+            <span className="text-sm font-medium text-gray-700">Calculating probabilities...</span>
+          </div>
+        </div>
+      )} */}
     </div>
   );
 }

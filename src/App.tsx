@@ -5,7 +5,6 @@ import { DeckDisplay } from './components/DeckDisplay';
 import { HandDisplay } from './components/HandDisplay';
 import { CardActionMenu } from './components/CardActionMenu';
 import DiscardTable from './components/DiscardTable';
-import Calculator from './components/Calculator';
 
 type CardLocation = 'deck' | 'hand' | 'discarded';
 
@@ -19,6 +18,7 @@ function App() {
   const [selectedForDiscard, setSelectedForDiscard] = useState<Set<string>>(new Set());
   const [showAddCard, setShowAddCard] = useState(false);
   const [handSize, setHandSize] = useState<number>(7);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
     setCardLocations(prev => {
@@ -246,17 +246,17 @@ function App() {
         )}
 
         <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
-          {handCards.length > 0 && (
-            <div className="lg:w-[26rem] flex-shrink-0">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <DiscardTable
-                  key={`discard-${selectedForDiscard.size}`}
-                  selectedForDiscard={Array.from(selectedForDiscard)}
-                  remainingDeck={remainingDeck}
-                />
-              </div>
+          <div className="lg:w-[26rem] flex-shrink-0">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <DiscardTable
+                key={`discard-${selectedForDiscard.size}`}
+                selectedForDiscard={Array.from(selectedForDiscard)}
+                remainingDeck={remainingDeck}
+                isCalculating={isCalculating}
+                onCalculatingChange={setIsCalculating}
+              />
             </div>
-          )}
+          </div>
 
           <div className="flex-1">
             <div className="bg-white rounded-lg shadow-md p-6">
@@ -272,7 +272,7 @@ function App() {
                   onDiscard={handleDiscard}
                   handSize={handSize}
                   setHandSize={setHandSize}
-                  onStartGame={() => handleDrawHand(handSize)}
+                  onCalculatingChange={setIsCalculating}
                 />
               </div>
 
