@@ -10,6 +10,8 @@ interface HandDisplayProps {
   onToggleDiscard?: (id: string) => void;
   onDrawHand: (handSize: number) => void;
   remainingDeck: CardType[];
+  onPlay?: () => void;
+  onDiscard?: () => void;
 }
 
 const rankOrder: Record<Rank, number> = {
@@ -21,7 +23,7 @@ const suitOrder: Record<Suit, number> = {
   'spades': 4, 'hearts': 3, 'clubs': 2, 'diamonds': 1
 };
 
-export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand, remainingDeck }: HandDisplayProps) {
+export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDiscard, onDrawHand, remainingDeck, onPlay, onDiscard }: HandDisplayProps) {
   const [sortBy, setSortBy] = useState<'rank' | 'suit'>('rank');
   const [handSize, setHandSize] = useState<number>(7);
 
@@ -48,11 +50,6 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
             <h2 className="text-2xl font-bold text-gray-800">Your Hand</h2>
             <p className="text-gray-600">
               {cards.length} {cards.length === 1 ? 'card' : 'cards'}
-              {selectedForDiscard && selectedForDiscard.size > 0 && (
-                <span className="text-orange-600 ml-2">
-                  ({selectedForDiscard.size} selected for discard)
-                </span>
-              )}
             </p>
           </div>
 
@@ -76,28 +73,49 @@ export function HandDisplay({ cards, onCardClick, selectedForDiscard, onToggleDi
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2 w-fit mb-2">
-                <label className="text-sm font-medium text-gray-700">Sort Hand:</label>
-                <button
-                  onClick={() => setSortBy('rank')}
-                  className={`px-3 py-1 text-sm rounded transition-colors ${
-                    sortBy === 'rank'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Rank
-                </button>
-                <button
-                  onClick={() => setSortBy('suit')}
-                  className={`px-3 py-1 text-sm rounded transition-colors ${
-                    sortBy === 'suit'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Suit
-                </button>
+              <div className="flex items-center gap-4 mb-2">
+                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2 w-fit">
+                  <label className="text-sm font-medium text-gray-700">Sort Hand:</label>
+                  <button
+                    onClick={() => setSortBy('rank')}
+                    className={`px-3 py-1 text-sm rounded transition-colors ${
+                      sortBy === 'rank'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Rank
+                  </button>
+                  <button
+                    onClick={() => setSortBy('suit')}
+                    className={`px-3 py-1 text-sm rounded transition-colors ${
+                      sortBy === 'suit'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Suit
+                  </button>
+                </div>
+
+                {selectedForDiscard && selectedForDiscard.size > 0 && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={onPlay}
+                      disabled={!onPlay}
+                      className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      Play
+                    </button>
+                    <button
+                      onClick={onDiscard}
+                      disabled={!onDiscard}
+                      className="px-4 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      Discard
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           )}

@@ -128,6 +128,84 @@ function App() {
     setSelectedCards(new Set());
   };
 
+  const handlePlay = () => {
+    // Get selected cards and draw count
+    const selectedCardIds = Array.from(selectedForDiscard);
+    const drawCount = selectedCardIds.length;
+
+    // Remove selected cards from hand (move to discarded for now, can track play history later)
+    setCardLocations(prev => {
+      const next = new Map(prev);
+      selectedCardIds.forEach(id => {
+        next.set(id, 'discarded');
+      });
+      return next;
+    });
+
+    // Draw replacement cards from deck
+    const availableDeckCards = deckCards.filter(card => !selectedCards.has(card.id));
+    const actualDrawCount = Math.min(drawCount, availableDeckCards.length);
+
+    // Fisher-Yates shuffle for random sample
+    const shuffled = [...availableDeckCards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Take first actualDrawCount cards and move to hand
+    const cardsToMove = shuffled.slice(0, actualDrawCount);
+    setCardLocations(prev => {
+      const next = new Map(prev);
+      cardsToMove.forEach(card => {
+        next.set(card.id, 'hand');
+      });
+      return next;
+    });
+
+    // Clear selection
+    setSelectedForDiscard(new Set());
+  };
+
+  const handleDiscard = () => {
+    // Get selected cards and draw count
+    const selectedCardIds = Array.from(selectedForDiscard);
+    const drawCount = selectedCardIds.length;
+
+    // Remove selected cards from hand (move to discarded)
+    setCardLocations(prev => {
+      const next = new Map(prev);
+      selectedCardIds.forEach(id => {
+        next.set(id, 'discarded');
+      });
+      return next;
+    });
+
+    // Draw replacement cards from deck
+    const availableDeckCards = deckCards.filter(card => !selectedCards.has(card.id));
+    const actualDrawCount = Math.min(drawCount, availableDeckCards.length);
+
+    // Fisher-Yates shuffle for random sample
+    const shuffled = [...availableDeckCards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Take first actualDrawCount cards and move to hand
+    const cardsToMove = shuffled.slice(0, actualDrawCount);
+    setCardLocations(prev => {
+      const next = new Map(prev);
+      cardsToMove.forEach(card => {
+        next.set(card.id, 'hand');
+      });
+      return next;
+    });
+
+    // Clear selection
+    setSelectedForDiscard(new Set());
+  };
+
   const handCards = deck.filter(card => cardLocations.get(card.id) === 'hand');
   const deckCards = deck.filter(card => cardLocations.get(card.id) === 'deck');
   const remainingDeck = deckCards; // Cards to draw from (deck excludes hand cards)
@@ -168,6 +246,8 @@ function App() {
                   onToggleDiscard={handleToggleDiscard}
                   onDrawHand={handleDrawHand}
                   remainingDeck={remainingDeck}
+                  onPlay={handlePlay}
+                  onDiscard={handleDiscard}
                 />
               </div>
 
