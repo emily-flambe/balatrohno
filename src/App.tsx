@@ -288,6 +288,9 @@ function App() {
           <h1 className="text-4xl font-bold text-gray-900">
             BalatrOH NO
           </h1>
+          <p className="text-gray-600 mt-2">
+            a perfectly reasonable tool for your everyday life
+          </p>
         </div>
 
         {handCards.length > 0 && (
