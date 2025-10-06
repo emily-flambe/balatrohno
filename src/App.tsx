@@ -282,7 +282,7 @@ function App() {
   const remainingDeck = deckCards; // Cards to draw from (deck excludes hand cards)
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 px-1">
+    <div className="min-h-screen bg-gray-100 py-6 px-6">
       <div className="max-w-[1450px] mx-auto">
         <div className="relative text-center mb-12 pt-4">
           <div className="flex items-center justify-center gap-16">
@@ -332,30 +332,32 @@ function App() {
           </div>
         </div>
 
-        {handCards.length > 0 && (
-          <div className="flex justify-end gap-2 mb-2">
-            <button
-              onClick={undo}
-              disabled={!canUndo}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-            >
-              Undo
-            </button>
-            <button
-              onClick={redo}
-              disabled={!canRedo}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-            >
-              Redo
-            </button>
-            <button
-              onClick={handleReset}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
-            >
-              Reset
-            </button>
-          </div>
-        )}
+        <div className="flex justify-end gap-2 mb-2 h-10">
+          {handCards.length > 0 && (
+            <>
+              <button
+                onClick={undo}
+                disabled={!canUndo}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              >
+                Undo
+              </button>
+              <button
+                onClick={redo}
+                disabled={!canRedo}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              >
+                Redo
+              </button>
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+              >
+                Reset
+              </button>
+            </>
+          )}
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
           <div className="lg:w-[26rem] flex-shrink-0">

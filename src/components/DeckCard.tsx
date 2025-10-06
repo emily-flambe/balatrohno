@@ -25,7 +25,7 @@ export function DeckCard({ card, isSelected, onToggle }: DeckCardProps) {
     <div
       onClick={() => onToggle(card.id)}
       className={`
-        w-[68px]
+        w-[66px]
         border-2 rounded-lg p-2
         transition-colors duration-200
         flex flex-col items-center justify-center

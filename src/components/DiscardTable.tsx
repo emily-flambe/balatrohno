@@ -22,7 +22,7 @@ export default function DiscardTable({ selectedForDiscard, remainingDeck }: Disc
   if (selectedForDiscard.length === 0) {
     return (
       <div className="w-full bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-        <p className="text-gray-500">Select cards to discard to see probability table</p>
+        <p className="text-gray-500">(select cards for quick maths)</p>
       </div>
     );
   }

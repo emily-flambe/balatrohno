@@ -34,8 +34,8 @@ export function HandCard({ card, onClick, isSelectedForDiscard = false, onToggle
     <div
       onClick={handleClick}
       className={`
-        w-16
-        border-2 rounded-lg p-3
+        w-[78px]
+        border-2 rounded-lg p-2
         transition-colors duration-200
         flex flex-col items-center justify-center
         aspect-[5/7]
