@@ -30,8 +30,8 @@ export function DeckDisplay({
   const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<'suit' | 'rank'>('suit');
 
-  const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-  const suits: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
+  const ranks: Rank[] = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
+  const suits: Suit[] = ['spades', 'hearts', 'clubs', 'diamonds'];
 
   const filteredDeck = useMemo(() => {
     const filtered = deck.filter(card => {
