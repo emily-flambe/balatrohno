@@ -10,16 +10,61 @@
 
 ## Component Structure
 
-### Minimal Component Tree
+### Component Tree
 
 ```
 App
-├── DeckDisplay (shows cards in grid)
+├── HandDisplay (current hand with discard selection)
+├── DiscardTable (dynamic probability table)
+├── DeckDisplay (remaining cards in deck)
 ├── DeckControls (add/delete buttons)
 └── Calculator (inputs + result)
 ```
 
-**Three components. That's all we need for MVP.**
+## Hand View and Discard Probabilities
+
+### Core Concept
+
+The hand view allows users to simulate the Balatro discard mechanic:
+
+1. User selects N cards from their hand to discard
+2. User will draw N replacement cards from the remaining deck
+3. The discard probabilities table shows the likelihood of various outcomes **for just those N replacement cards**
+
+### Critical Behavior Requirements
+
+**Discard Probabilities Table Behavior:**
+
+- **Dynamic Column Generation**: When user selects N cards from hand, table displays columns for n=1 through n=N
+- **Real-time Recalculation**: Probabilities recalculate immediately when cards are selected/deselected from hand
+- **Scope**: Probabilities are ONLY for the N cards that will be drawn, NOT for the entire resulting hand
+- **Deck Composition**: Drawing happens from the remaining deck (all cards not currently in hand or discarded)
+
+**Example:**
+```
+User has 8 cards in hand
+User selects 3 cards to discard
+Remaining deck has 44 cards
+
+Discard Table shows:
+- N=1 column: Probability of outcomes when drawing 1 card from 44-card deck
+- N=2 column: Probability of outcomes when drawing 2 cards from 44-card deck
+- N=3 column: Probability of outcomes when drawing 3 cards from 44-card deck
+
+Categories shown:
+- Any N of a Kind (probability all N cards have same rank)
+- Suits (probability of getting ≥1 card of each suit)
+- Ranks (probability of getting ≥1 card of each rank)
+- Specific Cards (probability of getting specific card)
+```
+
+**What Changes the Probabilities:**
+- Number of cards selected from hand (N changes)
+- Composition of remaining deck changes as cards move between deck/hand/discard
+
+**What Does NOT Change:**
+- The deck cards themselves (same 44 cards)
+- Only N (the number of draws) changes when selecting/deselecting from hand
 
 ## Component Specifications
 

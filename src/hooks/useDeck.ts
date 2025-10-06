@@ -2,7 +2,19 @@ import { useState, useCallback } from 'react';
 import type { Card } from '../lib/types';
 import { createStandardDeck } from '../lib/deck';
 
-export function useDeck() {
+export interface UseDeckReturn {
+  deck: Card[];
+  addCard: (card: Card) => void;
+  removeCard: (id: string) => void;
+  duplicateCards: (ids: string[]) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  reset: () => void;
+}
+
+export function useDeck(): UseDeckReturn {
   const [deck, setDeck] = useState<Card[]>(createStandardDeck());
   const [history, setHistory] = useState<Card[][]>([createStandardDeck()]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -64,5 +76,12 @@ export function useDeck() {
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
 
-  return { deck, addCard, removeCard, duplicateCards, undo, redo, canUndo, canRedo };
+  const reset = () => {
+    const standardDeck = createStandardDeck();
+    setDeck(standardDeck);
+    setHistory([standardDeck]);
+    setHistoryIndex(0);
+  };
+
+  return { deck, addCard, removeCard, duplicateCards, undo, redo, canUndo, canRedo, reset };
 }

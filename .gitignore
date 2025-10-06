@@ -32,6 +32,9 @@ dist
 .wrangler
 wrangler.toml.lock
 
+# Cache
+.cache
+
 # Environment variables
 .env
 .env.local

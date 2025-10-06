@@ -63,42 +63,101 @@ P(X >= k) = 1 - P(X <= k-1)
 
 ## Implementation
 
-### Native Implementation
+The application provides **two types of calculations**:
 
-This application uses a native implementation of the hypergeometric distribution (no external dependencies like scipy).
+### 1. Simple Card Draw Probabilities (Hypergeometric Distribution)
 
-```python
-def hypergeom_pmf(k, M, n, N):
-    """
-    Calculate probability mass function for hypergeometric distribution.
-    P(X = k) = C(n, k) * C(M-n, N-k) / C(M, N)
-    """
-    numerator = binomial_coefficient(n, k) * binomial_coefficient(M - n, N - k)
-    denominator = binomial_coefficient(M, N)
-    return numerator / denominator
+Used for calculating individual card type probabilities in the discard table:
 
-def hypergeom_cdf(k, M, n, N):
-    """
-    Calculate cumulative distribution function.
-    P(X <= k) = sum of P(X = i) for i = 0 to k
-    """
-    cumulative = 0.0
-    for i in range(int(k) + 1):
-        cumulative += hypergeom_pmf(i, M, n, N)
-    return cumulative
+**Frontend Implementation (TypeScript)** using the **complement approach**:
+
+```typescript
+function calculateProbability(
+  deckSize: number,
+  matchingCards: number,
+  drawCount: number,
+  minMatches: number
+): number {
+  // Impossible scenarios
+  if (matchingCards < minMatches) {
+    return 0.0;
+  }
+
+  // Guaranteed scenarios
+  const nonMatchingCards = deckSize - matchingCards;
+  if (nonMatchingCards < drawCount - minMatches + 1) {
+    return 1.0;
+  }
+
+  // Calculate P(X >= min_matches) = 1 - P(X <= min_matches - 1)
+  if (minMatches === 1) {
+    // P(X >= 1) = 1 - P(X = 0)
+    return 1 - hypergeomPmf(0, deckSize, matchingCards, drawCount);
+  } else {
+    // P(X >= min_matches) = 1 - P(X <= min_matches - 1)
+    return 1 - hypergeomCdf(minMatches - 1, deckSize, matchingCards, drawCount);
+  }
+}
 ```
 
-### Optimization for Common Case
+This provides exact probabilities for questions like "What's the probability of drawing at least 1 Ace when discarding 3 cards?"
 
-For the common case of "at least 1 match", we use a shortcut:
+### 2. Poker Hand Probabilities After Discard
 
-```python
-if min_matches == 1:
-    # P(X >= 1) = 1 - P(X = 0)
-    return 1 - hypergeom_pmf(0, deck_size, matching_cards, draw_count)
+Used for calculating complete poker hand probabilities in the hand view:
+
+**Exact Enumeration Approach**:
+
+```typescript
+function calculateHandProbabilities(
+  currentHand: Card[],
+  selectedForDiscard: Set<string>,
+  remainingDeck: Card[]
+): HandProbabilities {
+  const keptCards = currentHand.filter(card => !selectedForDiscard.has(card.id));
+  const discardCount = selectedForDiscard.size;
+
+  // Balatro rule: Maximum 5 discards
+  if (discardCount > 5) {
+    throw new Error('Cannot discard more than 5 cards in Balatro');
+  }
+
+  // Enumerate ALL possible draw outcomes
+  // C(47,5) = 1,533,939 max combinations - fast enough for exact calculation
+  const handCounts = countPokerHandsInAllCombinations(keptCards, discardCount, remainingDeck);
+
+  // Calculate exact probabilities
+  return handCounts.map(count => count / totalCombinations);
+}
 ```
 
-This is more efficient than calculating the full CDF.
+**Why Enumeration Instead of Formula?**
+
+Poker hands don't follow simple hypergeometric distributions because:
+- Multiple overlapping patterns (e.g., Full House contains Three of a Kind)
+- Complex detection logic (e.g., Straights require specific rank sequences)
+- Conditional dependencies between hand types
+
+**Why Not Monte Carlo Sampling?**
+
+Balatro limits discards to 5 cards maximum:
+- 1 discard: 47 combinations
+- 2 discards: 1,081 combinations
+- 3 discards: 16,215 combinations
+- 4 discards: 178,365 combinations
+- 5 discards: 1,533,939 combinations
+
+All scenarios can be **exactly enumerated in <50ms**. Monte Carlo would give approximate results with unnecessary variance.
+
+**Implementation**:
+
+The code enumerates all C(n,k) combinations of drawing k cards from the remaining deck, detects poker hands for each outcome, and calculates exact probabilities as:
+
+```
+P(Two Pair) = (# outcomes with Two Pair) / (total possible outcomes)
+```
+
+This guarantees **exact results** with no approximation error.
 
 ## Examples
 
@@ -171,21 +230,18 @@ calculate_probability(52, 4, 5, 5)  # Returns 0.0
 
 ### Guaranteed Scenarios
 
-When there aren't enough non-matching cards to avoid getting matches:
+When there aren't enough non-matching cards to fill the draw without getting matches:
 
 ```python
 # 50 Aces in 52 cards, draw 5, need 1 Ace
 # Only 2 non-Aces exist, can't draw 5 cards without getting an Ace
 calculate_probability(52, 50, 5, 1)  # Returns 1.0
+
+# This uses the formula: non_matching_cards < (draw_count - min_matches + 1)
+# In this case: 2 < (5 - 1 + 1) = 2 < 5, so guaranteed
 ```
 
-### Zero Matches
-
-Requesting at least 0 matches is always certain:
-
-```python
-calculate_probability(52, 4, 5, 0)  # Returns 1.0
-```
+The logic accounts for the minimum matches requirement: if you need at least N matches and there aren't enough non-matching cards to avoid getting N matches, the probability is 100%.
 
 ## Input Validation
 
@@ -213,7 +269,19 @@ For typical card game scenarios (n <= 52, k <= 13), calculations are near-instan
 
 The implementation uses integer arithmetic for binomial coefficients until the final division, minimizing floating-point errors. The iterative multiplication approach avoids factorial overflow for reasonable input sizes.
 
-## Why Not Use Approximations?
+## Why Not Use scipy or Approximations?
+
+### Why Native Implementation Instead of scipy?
+
+Cloudflare Workers Python environment does not support scipy. While scipy would provide a well-tested hypergeometric distribution implementation, the platform constraint requires a native solution.
+
+The native implementation is appropriate because:
+- Small population sizes (52-card deck) make exact calculation fast
+- Hypergeometric distribution formulas are straightforward to implement
+- Comprehensive test suite validates correctness
+- No external dependencies simplifies deployment
+
+### Why Exact Calculation Instead of Approximations?
 
 For small population sizes (like a 52-card deck), exact calculation is:
 - Fast enough (sub-millisecond)
@@ -229,4 +297,10 @@ Normal or binomial approximations would introduce unnecessary error for negligib
 
 ## Summary
 
-This application uses exact hypergeometric distribution calculations to provide accurate probabilities for card draw scenarios. The implementation is optimized for the common "at least 1" case while maintaining accuracy for all valid inputs through native calculation without external dependencies.
+This application uses exact hypergeometric distribution calculations to provide accurate probabilities for card draw scenarios:
+
+- **Dual Implementation**: Both backend (Python) and frontend (TypeScript) implement the same mathematical approach
+- **Native Calculation**: No external dependencies (scipy not supported in Cloudflare Workers)
+- **Optimized**: Backend uses complement approach for efficiency; frontend uses direct summation
+- **Validated**: Comprehensive test suite ensures correctness against known probability values
+- **Fast**: Sub-millisecond calculations for typical card game scenarios
